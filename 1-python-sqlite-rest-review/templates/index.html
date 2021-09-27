@@ -1,0 +1,21 @@
+<html>
+
+<head>
+    <title>{{title}}</title>
+    <style>
+        .main {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <h1>Welcome to Restaurant Review Application</h1>
+        <a href="{{url_for('addReview')}}">Write Review</a><br/>
+        <a href="{{url_for('getReview')}}">Get Review for a Restaurant</a><br/>
+        <a href="{{url_for('topRestaurant')}}">Top 10 Restaurants</a><br/>
+    </div>
+</body>
+
+</html>
