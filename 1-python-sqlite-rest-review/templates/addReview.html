@@ -8,11 +8,29 @@
         }
     </style>
 </head>
-
 <body>
     <div class="main">
         <h1>Write a review</h1>
 
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form action="" method="POST">
+            <label>Username</label>&nbsp;<input type="text" name="username" required/><br/><br/>
+            <label>Restaurant</label>&nbsp;<input type="text" name="restaurant" required /><br/><br/>
+            <label>Food</label>&nbsp;<input type="number" name="food" required min="1" max="5" step=".1"/><br/><br/>
+            <label>Service</label>&nbsp;<input type="number" name="service" required min="1" max="5" step=".1"/><br/><br/>
+            <label>Ambience</label>&nbsp;<input type="number" name="ambience" required min="1" max="5" step=".1"/><br/><br/>
+            <label>Price</label>&nbsp;<input type="number" name="price" required min="1" max="5" step=".1"/><br/><br/>
+            <label>Overall</label>&nbsp;<input type="number" name="overall" required min="1" max="5" step=".1"/><br/><br/>
+            <label>Review</label>&nbsp;<textarea  name="review" required></textarea><br/><br/>
+            <input type="submit" value="submit">
+        </form>
         <a href="{{url_for('index')}}">Back to home</a><br/>
     </div>
 </body>
