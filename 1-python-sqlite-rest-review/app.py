@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, flash
+# importing python packages
+from flask import Flask, render_template, request
 from setup import create_connection
 from datetime import datetime
 
@@ -41,13 +42,15 @@ def addReview():
                             (restaurant, food, service, ambience, price, overall))
             conn.commit()
             conn.close()
-            flash("Review added successfully")
+            message = "Review added successfully"
         except:
+            # If any error during insert operation
             conn.rollback()
             conn.close()
-            flash("unable to inset review")
+            message = "unable to inset review"
         finally:
-            return render_template("addReview.html", title="Add Review")
+            # After inserting the values into database
+            return render_template("addReview.html", title="Add Review", message=message)
     return render_template("addReview.html", title="Add Review")
 
 # Get Review & Show Review
@@ -55,23 +58,41 @@ def addReview():
 def getReview():
     if request.method == "POST":
         try:
+            # Get values from form
             restaurant = request.form["restaurant"]
-
+            # Establish connection to the database
             conn = create_connection(database)
-            pass
-        except:
-            pass
-        finally:
-            return render_template("showReviews.html", data=data)
+            cursor = conn.cursor()
+            cursor.execute(f'''SELECT DISTINCT a.username, a.Restaurant, a.Rating, a.Review, a.ReviewTime,
+                                b.Food, b.Service, b.Ambience, b.Price from reviews as a, ratings as b 
+                                where a.Restaurant == '{restaurant}' and a.Restaurant == b.Restaurant''')
+            # Save retrived value
+            data = cursor.fetchall()
+            # If there is no restruant in the table
+            if len(data) != 0:
+                return render_template("showReviews.html", data=data)
+            else:
+                msg = f"Unable to find review for the restraunt {restaurant}"
+                return render_template("showReviews.html", msg=msg)
+        except Exception as e:
+            print(str(e))
     return render_template("getReview.html", title="Get & Show Review")
 
 
 # Show Report
 @app.route("/topRestaurant")
 def topRestaurant():
-    return render_template("showReport.html", title="Show Report" )
+    # Establish connection
+    conn = create_connection(database)
+    cursor = conn.cursor()
+    cursor.execute('''select DISTINCT a.Restaurant, b.Food, b.Service,
+                    b.Ambience, b.Price, a.Rating from reviews as a, ratings as b
+                    WHERE a.Restaurant == b.Restaurant ORDER BY a.Rating DESC''')
+    data = cursor.fetchall()
+
+    return render_template("showReport.html", title="Show Report", data=data)
 
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

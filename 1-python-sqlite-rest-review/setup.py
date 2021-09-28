@@ -1,16 +1,18 @@
+# importiong needed python packages
 import sqlite3
-from sqlite3.dbapi2 import Error
 
 def create_connection(db_file_location):
     """
         create a database connection to the sqlite database
+        arg:
+        -db_file_location : path to the database file
     """
     conn =  None
     try:
-        conn = sqlite3.connect(db_file_location)
+        conn = sqlite3.connect(db_file_location) # Establish connection to the DB
         return conn
     except Exception as e:
-        print(str(e))
+        print(str(e)) # Error
 
 
 def create_table(dbconnction, sql_query):
@@ -21,15 +23,17 @@ def create_table(dbconnction, sql_query):
         sql_query - sql query to create table
     """
     try:
-        c = dbconnction.cursor()
-        c.execute(sql_query)
+        c = dbconnction.cursor() # Create cursor which helps to execute sql query
+        c.execute(sql_query) # Executing SQL Query
     except Exception as e:
-        print(str(e))
+        print(str(e)) # Error
 
 
 def main():
-    database_file_location = "reviewData.db"
+    # Intialize Database location
+    database_file_location = "reviewData.db" 
 
+    # Review table sql query
     sql_create_reviews_table = """CREATE TABLE IF NOT EXISTS reviews (
                                         username CHAR(40) NOT NULL,
                                         Restaurant CHAR(50) NOT NULL,
@@ -38,6 +42,8 @@ def main():
                                         Review CHAR(500) NOT NULL
                                     )"""
 
+    # Rating table sql query
+    
     sql_create_ratings_table = """CREATE TABLE IF NOT EXISTS ratings (
                                     Restaurant CHAR(50) NOT NULL,
                                     Food FLOAT NOT NULL,

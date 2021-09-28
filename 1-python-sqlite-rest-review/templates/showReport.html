@@ -6,12 +6,44 @@
         .main {
             text-align: center;
         }
+        
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+        
+        .center {
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 
 <body>
     <div class="main">
         <h1>Top Restaurant in Town</h1>
+
+        <table class="center">
+            <tr>
+                <th>Restaurant</th>
+                <th>Food</th>
+                <th>Service</th>
+                <th>Ambience</th>
+                <th>Price</th>
+                <th>Rating</th>
+            </tr>
+            {% for i in data %}
+            <tr>
+                <td>{{i[0]}}</td>
+                <td>{{i[1]}}</td>
+                <td>{{i[2]}}</td>
+                <td>{{i[3]}}</td>
+                <td>{{i[4]}}</td>
+                <td>{{i[5]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
 
         <a href="{{url_for('index')}}">Back to home</a><br/>
     </div>
