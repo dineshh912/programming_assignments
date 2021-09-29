@@ -1,4 +1,5 @@
 # importing python packages
+import re
 from flask import Flask, render_template, request
 from setup import create_connection
 from datetime import datetime
@@ -63,14 +64,12 @@ def getReview():
             # Establish connection to the database
             conn = create_connection(database)
             cursor = conn.cursor()
-            cursor.execute(f'''SELECT DISTINCT a.username, a.Restaurant, a.Rating, a.Review, a.ReviewTime,
-                                b.Food, b.Service, b.Ambience, b.Price from reviews as a, ratings as b 
-                                where a.Restaurant == '{restaurant}' and a.Restaurant == b.Restaurant''')
+            cursor.execute(f"SELECT * from reviews where Restaurant == '{restaurant}'")
             # Save retrived value
             data = cursor.fetchall()
             # If there is no restruant in the table
             if len(data) != 0:
-                return render_template("showReviews.html", data=data)
+                return render_template("showReviews.html", data=data, restaurant=restaurant)
             else:
                 msg = f"Unable to find review for the restraunt {restaurant}"
                 return render_template("showReviews.html", msg=msg)
@@ -85,10 +84,9 @@ def topRestaurant():
     # Establish connection
     conn = create_connection(database)
     cursor = conn.cursor()
-    cursor.execute('''select DISTINCT a.Restaurant, b.Food, b.Service,
-                    b.Ambience, b.Price, a.Rating from reviews as a, ratings as b
-                    WHERE a.Restaurant == b.Restaurant ORDER BY a.Rating DESC''')
+    cursor.execute("select * from ratings ORDER BY Overall DESC")
     data = cursor.fetchall()
+    print(data)
 
     return render_template("showReport.html", title="Show Report", data=data)
 
