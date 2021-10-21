@@ -1,0 +1,3 @@
+1. After zip file extraction, open command prompt on a folder.
+2. run " npm install " to install all the neccessary node packages.
+3. Run "node main.js" to run the program
