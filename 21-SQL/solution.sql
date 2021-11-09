@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS client(
     client_id INT(10) NOT NULL AUTO_INCREMENT,
     client_first_name VARCHAR(255) NOT NULL,
     client_last_name VARCHAR(255) NOT NULL,
-    client_dob VARCHAR(10) NOT NUL,
+    client_dob YEAR(4) NOT NULL,
     occupation VARCHAR(50) NOT NULL,
     PRIMARY KEY(client_id)
 )ENGINE =InnoDB;
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS borrower(
     borrow_id INT(10) NOT NULL AUTO_INCREMENT,
     client_id INT(10) NOT NULL,
     book_id INT(10) NOT NULL,
-    borrow_date DATE NOT NULL,
+    borrow_date VARCHAR(50) NOT NULL,
     PRIMARY KEY(borrow_id),
     FOREIGN KEY(client_id) REFERENCES client (client_id),
     FOREIGN KEY(book_id) REFERENCES book (book_id)
@@ -522,7 +522,8 @@ INSERT INTO borrower(
         (298,72,3,'10/02/2017'),
         (299,26,23,'01/03/2016'),
         (300,49,23,'25/10/2016');
-
+/* CONVERT STRING COLUMN INTO DATE COLUMN */
+UPDATE borrower set borrow_date=str_to_date(borrow_date,'%d/%m/%Y');
 /* Q1 - Display all contents of the Clients table */
 
 SELECT * FROM client;
@@ -532,6 +533,8 @@ SELECT * FROM client;
 SELECT client_first_name, client_last_name, occupation FROM client;
 
 /* Q3 - First and last names of clients that borrowed books in March 2018 */
+
+SELECT * FROM `borrower` WHERE YEAR(DATE(borrow_date))=2018 AND MONTH(DATE(borrow_date)) = 03;
 
 /* Q4 - First and last names of the top 5 authors clients borrowed in 2017 */
 
