@@ -4,49 +4,32 @@ def process_data(data,mean=None,std=None):
     # normalize the data to have zero mean and unit variance (add 1e-15 to std to avoid numerical issue)
     if mean is not None:
         # directly use the mean and std precomputed from the training data
-        data = (data - mean) / (std + 1e-15)
+
         return data
     else:
         # compute the mean and std based on the training data
-        mean, std = np.mean(data, axis=0), np.std(data, axis=0) # placeholder
-        data = (data - mean) / (std + 1e-15)
+        mean = std = 0 # placeholder
+
         return data, mean, std
 
 def process_label(label):
     # convert the labels into one-hot vector for training
     one_hot = np.zeros([len(label),10])
 
-    for i in range(len(label)):
-        one_hot[i][label[i]] = 1
-
     return one_hot
 
 def tanh(x):
     # implement the hyperbolic tangent activation function for hidden layer
     # You may receive some warning messages from Numpy. No worries, they should not affect your final results
-    ''' f(x) = (e^x - e^-x) / (e^x + e^-x); derivative of tanh: f'(x) = (1-g(x^2)'''
-    # (np.exp(x) - np.exp(-x))/(np.exp(x) + np.exp(-x))
-    # 1 - tanh(x) * tanh(x) ; 1- np.power(tanh(x), 2)
-    f_x = 2 / (1 + np.exp(-2 * x)) - 1
-    return f_x
+    f_x = x # placeholder
 
+    return f_x
 
 def softmax(x):
     # implement the softmax activation function for output layer
-    f_x = np.exp(x) / np.sum(np.exp(x)) 
+    f_x = x # placeholder
+
     return f_x
-
-def cross_entropy_loss(y, yhat):
-    '''
-        yHat  = predicted value
-        y =  actual label
-    '''
-    if y == 1:
-      return -np.log(yhat)
-    else:
-      return -np.log(1 - yhat)
-
-
 
 class MLP:
     def __init__(self,num_hid):
@@ -55,9 +38,8 @@ class MLP:
         self.bias_1 = np.random.random([1,num_hid])
         self.weight_2 = np.random.random([num_hid,10])
         self.bias_2 = np.random.random([1,10])
-        self.hum_hid = num_hid
 
-    def fit(self,train_x, train_y, valid_x, valid_y):
+    def fit(self,train_x,train_y, valid_x, valid_y):
         # learning rate
         lr = 5e-3
         # counter for recording the number of epochs without improvement
@@ -70,27 +52,14 @@ class MLP:
         while count<=50:
             # training with all samples (full-batch gradient descents)
             # implement the forward pass (from inputs to predictions)
-            # hidden Layer
-            hidden_output = self.get_hidden(train_x)
-            # out layer
-            output_layer_input = hidden_output.dot(self.weight_2) + self.bias_2
-            y_pred = softmax(output_layer_input)
+
 
             # implement the backward pass (backpropagation)
             # compute the gradients w.r.t. different parameters
-            grad_wrt_out_1_input = cross_entropy_loss(train_y, y_pred) * softmax(output_layer_input)
-            grad_v = hidden_input.T.dot(grad_wrt_out_1_input)
-            grad_v0 = np.sum(grad_wrt_out_1_input, axis=0, keepdims=True)
-            
-            grad_wrt_hidden_1_input = grad_wrt_out_1_input.dot(self.weight_2.T)* dtanh(hidden_input)
-            grad_w = train_x.T.dot(grad_wrt_hidden_1_input)
-            grad_w0 = np.sum(grad_wrt_hidden_1_input, axis=0, keepdims=True)
+
 
             #update the parameters based on sum of gradients for all training samples
-            self.weight_1 -= lr * grad_v
-            self.bias_1 -= lr * grad_v0
-            self.weight_2 -= lr * grad_w
-            self.bias_2 -= lr * grad_w0
+
 
             # evaluate on validation data
             predictions = self.predict(valid_x)
@@ -107,21 +76,18 @@ class MLP:
 
     def predict(self,x):
         # generate the predicted probability of different classes
-        hidden_op = self.get_hidden(x)
+
 
         # convert class probability to predicted labels
 
-        # y = np.zeros([len(x),]).astype('int') # placeholder
+        y = np.zeros([len(x),]).astype('int') # placeholder
 
-        return y_pred
+        return y
 
     def get_hidden(self,x):
         # extract the intermediate features computed at the hidden layers (after applying activation function)
-        '''
-            hidden_input = x.dot(self.weight_1) + self.bias_1
-            hidden_ouput = tanh(hidden_input)
-        '''
-        z = tanh(np.dot(x, self.weight_1) + self.bias_1)
+        z = x # placeholder
+
         return z
 
     def params(self):
