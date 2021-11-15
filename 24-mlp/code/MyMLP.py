@@ -38,6 +38,22 @@ def softmax(x):
 
     return f_x
 
+class Softmax():
+    def __call__(self, x):
+        e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+        return e_x / np.sum(e_x, axis=-1, keepdims=True)
+
+    def gradient(self, x):
+        p = self.__call__(x)
+        return p * (1 - p)
+
+class TanH():
+    def __call__(self, x):
+        return 2 / (1 + np.exp(-2*x)) - 1
+
+    def gradient(self, x):
+        return 1 - np.power(self.__call__(x), 2)
+
 class MLP:
     def __init__(self,num_hid):
         # initialize the weights
