@@ -15,7 +15,8 @@ def process_data(data,mean=None,std=None):
 def process_label(label):
     # convert the labels into one-hot vector for training
     one_hot = np.zeros([len(label),10])
-
+    # numpy zero's function to create array of 0's of the required size(10, 10)
+    # Replacing 0 with 1 at required location
     for i in range(len(label)):
         one_hot[i][label[i]] = 1
 
@@ -30,10 +31,17 @@ def tanh(x):
     f_x = 2 / (1 + np.exp(-2 * x)) - 1
     return f_x
 
+def dtanh(x):
+    # implement the hyperbolic deravative tangent activation function for backprobagation
+    f_x = 1- np.power(tanh(x), 2)
+    return f_x
+
+
 def softmax(x):
     # implement the softmax activation function for output layer
     f_x = np.exp(x) / np.sum(np.exp(x)) 
     return f_x
+
 
 def cross_entropy_loss(y, yhat):
     '''
@@ -44,7 +52,6 @@ def cross_entropy_loss(y, yhat):
       return -np.log(yhat)
     else:
       return -np.log(1 - yhat)
-
 
 
 class MLP:
@@ -81,8 +88,8 @@ class MLP:
             update_bias_2 = lr * np.sum(label_diff, axis=0)
 
             inner = (np.dot(label_diff, self.weight_2.T))
-            dz = (hidden_output * (1 - hidden_output)) 
-            coeffs = (inner * dz)
+            dtz = dtanh(hidden_output)
+            coeffs = (inner * dtz)
 
             update_weight_1 = lr * np.dot(train_x.T, coeffs)
             update_bias_1 = lr * np.sum(coeffs, axis=0)
@@ -112,10 +119,10 @@ class MLP:
 
         # convert class probability to predicted labels
         y = softmax(np.dot(hidden_op, self.weight_2) + self.bias_2)
-        y_max = np.argmax(y, axis=1)
+        y_prob = np.argmax(y, axis=1)
         # y = np.zeros([len(x),]).astype('int') # placeholder
 
-        return y_max
+        return y_prob
 
     def get_hidden(self,x):
         # extract the intermediate features computed at the hidden layers (after applying activation function)

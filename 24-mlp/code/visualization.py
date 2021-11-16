@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-import matplotlib
+
 # recommended color for different digits
 color_mapping = {0:'red',1:'green',2:'blue',3:'yellow',4:'magenta',5:'orangered',
                 6:'cyan',7:'purple',8:'gold',9:'pink'}
