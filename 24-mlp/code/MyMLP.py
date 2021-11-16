@@ -30,7 +30,6 @@ def tanh(x):
     f_x = 2 / (1 + np.exp(-2 * x)) - 1
     return f_x
 
-
 def softmax(x):
     # implement the softmax activation function for output layer
     f_x = np.exp(x) / np.sum(np.exp(x)) 
@@ -55,7 +54,6 @@ class MLP:
         self.bias_1 = np.random.random([1,num_hid])
         self.weight_2 = np.random.random([num_hid,10])
         self.bias_2 = np.random.random([1,10])
-        self.hum_hid = num_hid
 
     def fit(self,train_x, train_y, valid_x, valid_y):
         # learning rate
@@ -72,25 +70,28 @@ class MLP:
             # implement the forward pass (from inputs to predictions)
             # hidden Layer
             hidden_output = self.get_hidden(train_x)
-            # out layer
-            output_layer_input = hidden_output.dot(self.weight_2) + self.bias_2
-            y_pred = softmax(output_layer_input)
+            y_pred = self.predict(train_x)
+            y_label = process_label(y_pred)
 
             # implement the backward pass (backpropagation)
             # compute the gradients w.r.t. different parameters
-            grad_wrt_out_1_input = cross_entropy_loss(train_y, y_pred) * softmax(output_layer_input)
-            grad_v = hidden_input.T.dot(grad_wrt_out_1_input)
-            grad_v0 = np.sum(grad_wrt_out_1_input, axis=0, keepdims=True)
-            
-            grad_wrt_hidden_1_input = grad_wrt_out_1_input.dot(self.weight_2.T)* dtanh(hidden_input)
-            grad_w = train_x.T.dot(grad_wrt_hidden_1_input)
-            grad_w0 = np.sum(grad_wrt_hidden_1_input, axis=0, keepdims=True)
+            label_diff = train_y - y_label
+
+            update_weight_2 = lr * np.dot(hidden_output.T, label_diff)
+            update_bias_2 = lr * np.sum(label_diff, axis=0)
+
+            inner = (np.dot(label_diff, self.weight_2.T))
+            dz = (hidden_output * (1 - hidden_output)) 
+            coeffs = (inner * dz)
+
+            update_weight_1 = lr * np.dot(train_x.T, coeffs)
+            update_bias_1 = lr * np.sum(coeffs, axis=0)
 
             #update the parameters based on sum of gradients for all training samples
-            self.weight_1 -= lr * grad_v
-            self.bias_1 -= lr * grad_v0
-            self.weight_2 -= lr * grad_w
-            self.bias_2 -= lr * grad_w0
+            self.weight_1 += update_weight_1
+            self.bias_1 += update_bias_1
+            self.weight_2 += update_weight_2
+            self.bias_2 += update_bias_2
 
             # evaluate on validation data
             predictions = self.predict(valid_x)
@@ -110,10 +111,11 @@ class MLP:
         hidden_op = self.get_hidden(x)
 
         # convert class probability to predicted labels
-
+        y = softmax(np.dot(hidden_op, self.weight_2) + self.bias_2)
+        y_max = np.argmax(y, axis=1)
         # y = np.zeros([len(x),]).astype('int') # placeholder
 
-        return y_pred
+        return y_max
 
     def get_hidden(self,x):
         # extract the intermediate features computed at the hidden layers (after applying activation function)
