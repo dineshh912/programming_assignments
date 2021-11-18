@@ -18,19 +18,13 @@ class ClientUI:
     def start_connection(self):
         self.c = socket.socket()
         self.c.connect((socket.gethostname(), 8080))
-        # socket.gethostname()= we can use IP address directly as well.
         
     def get_country_name(self):
-        conn = sqlite3.connect('undata.db') # connect to database
-        cur = conn.cursor()
-        select_query = "SELECT DISTINCT country from cdata" # select query
-        cur.execute(select_query)
-        results = cur.fetchall() 
-        self.country_list = [] # save only country into list
-        for i in results:
-            self.country_list.append(i[0])
-        cur.close()
-        conn.close() # closing sql connection
+        # After connection established get all country name from server
+        # This is for the values in the dropdown
+        res = self.c.recv(1024).decode()
+        res = json.loads(res) 
+        self.country_list = res
                     
     def start_UI(self):
         # create tkinder object
@@ -66,7 +60,7 @@ class ClientUI:
             x.append(int(k))
             y.append(float(v))
 
-        plt.figure(figsize=(15,6))
+        plt.figure(figsize=(10,6))
         
         plt.title(name)
         plt.plot(x,y) 

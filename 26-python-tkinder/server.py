@@ -20,6 +20,9 @@ class Server:
 
         connection, address = s.accept()
         print(f'connection establisted :{address}') # print once connection established
+        # After connection established get all country name and send to client
+        country_list = self.get_country_name()
+        connection.send(country_list.encode()) 
         # If client connected
         while True:
             recvMsg = connection.recv(1024).decode() # decode received message.
@@ -42,6 +45,21 @@ class Server:
             connection.send(data_json.encode()) # sending retrived data back to client.
             
         connection.close() 
+
+    def get_country_name(self):
+        conn = sqlite3.connect('undata.db') # connect to database
+        cur = conn.cursor()
+        select_query = "SELECT DISTINCT country from cdata" # select query
+        cur.execute(select_query)
+        results = cur.fetchall() 
+        country_list = [] # save only country into list
+        for i in results:
+            country_list.append(i[0])
+        cur.close()
+        conn.close() # closing sql connection
+
+        country_json = json.dumps(country_list)
+        return country_json
 
 
 if __name__ == "__main__":
