@@ -1,0 +1,26 @@
+Hello, for this assignment, I need the code files and UML with class Diagram.
+Please add comments on top of the code so I can see what is going on.
+The assignments are:
+Process:
+The user (client) requests data from the (server) database. The database sends back the data to the user. At acquisition of the data an XYPlot is drawn.
+
+DataFile:
+UNData.xml
+
+User Layer:
+The user selects a country, and passes the country name to the Business Layer. Use Tkinter to produce a pull-down for the user to select a country. Send the selected country to the Business Layer.
+
+Business Layer:
+Receives the information from the User Layer and constructs a SQL query to send to the Data Layer. The query extracts the yearly data (1990,2017) for the requested country. The data may be queried either country year-by-year or in one query for year range. After receiving the JSON string back from the Data Layer, send the data to the Graphic Layer for plotting.
+
+Data Layer:
+Construct a SQL Database based on the data from the DataFile. Processes the queries from the Business Layer. Sends back a JSON string for the requested query.
+
+Graphic Layer:
+Use your Graphic Class or module defined in previous assignments to draw a MatPlotLib XYPlot.
+
+Server Layer:
+The database access is controlled by the Server Socket. The client sends a query, and the server sends a JSON string.
+
+Client Socket:
+Requests data from the server. After receiving the data from the server, the client displays the data.
