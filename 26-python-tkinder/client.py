@@ -1,4 +1,3 @@
-import sqlite3
 from tkinter import *
 import socket
 import json
