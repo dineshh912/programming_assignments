@@ -7,12 +7,12 @@ from src.database.models import Mentalhealth
 
 # Creating new mental health entry
 MentalhealthInSchema = pydantic_model_creator(
-    Mentalhealth, name="MentalhealthIn", exclude=["added_by"], exclude_readonly=True)
+    Mentalhealth, name="MentalhealthIn", exclude=["added_by_id"], exclude_readonly=True)
 
 # Retriving mental health details
 MentalhealthOutSchema = pydantic_model_creator(
     Mentalhealth, name="Mentalhealth", exclude =[
-      "modified_at", "added_by.password", "added_by.created_at", "added_by.modified_at"
+      "modified_at", "added_by_id.password", "added_by_id.created_at", "added_by_id.modified_at"
     ]
 )
 

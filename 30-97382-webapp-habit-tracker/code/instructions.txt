@@ -1,0 +1,18 @@
+1. Folter structure attached.
+
+---Backend ---------------------------------------------------------------------------------------------
+1. After extracting the files open command prompt /terminal on backend folder.
+2. make sure running mysql database and change the configuration on src/database/config.py file.
+3. Run pip install -r requirements.txt => this will install all the needed python packages
+4. Run " aerich init-db " => this will create database tables based on your configuration. 
+5. If you are making any changes in data base schema make sure run following two commands to updata database
+5.1. aerich migrate 
+5.2. aerich upgrade
+6. Once all the packages installed and tables are ready. type " uvicorn src.main:app --reload " this is run backend server.
+
+---- Front end ----------------------------------------------------------------------------
+1. After extracting the files open command prompt /terminal on frontend folder.
+2. Type npm install to install all the nessary packages.
+3. Type npm run serve and open application in browser.
+
+4. attached video for functionality

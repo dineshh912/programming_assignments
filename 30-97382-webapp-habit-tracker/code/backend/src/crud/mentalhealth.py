@@ -18,7 +18,7 @@ async def create_mh(mh, current_user) -> MentalhealthOutSchema:
     # Processing form input
     mh_dict = mh.dict(exclude_unset=True)
     # adding user 
-    mh_dict["added_by"] = current_user.id
+    mh_dict["added_by_id"] = current_user.id
     mh_obj = await Mentalhealth.create(**mh_dict)
     return await MentalhealthOutSchema.from_tortoise_orm(mh_obj)
 
