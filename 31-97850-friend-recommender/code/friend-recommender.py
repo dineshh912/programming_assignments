@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-
 class SocialNetwork:
 
     def __init__(self):
         '''Constructor; initialize an empty social network
         '''
+        # initializing user dict
         self.users = {}
 
     def list_users(self):
@@ -14,8 +14,11 @@ class SocialNetwork:
         Returns:
             [str]: A list of usernames
         '''
+        # saving list of users
         list_of_users = []
+        # for each user in the network
         for user in self.users:
+            # add the user to the list of users
             list_of_users.append(user)
         return list_of_users
 
@@ -30,6 +33,7 @@ class SocialNetwork:
         Returns:
             None
         '''
+        # intitalize dict for user
         self.users[user] = []
         
 
@@ -49,6 +53,7 @@ class SocialNetwork:
         Returns:
             None
         '''
+        # add friends into the dict of user
         self.users[user].append(friend)
 
     def get_friends(self, user):
@@ -61,6 +66,7 @@ class SocialNetwork:
             [str]: The list of usernames of the user's friends
 
         '''
+        # get friends of the user and save as a list
         list_of_friends = self.users.get(user, [])
         return list_of_friends
 
@@ -76,7 +82,7 @@ class SocialNetwork:
             str: The username of a new candidate friend for the user
         '''
         # calculate the jaccard index
-        jaccard_i = {}
+        jaccard_index = {}
         dict_of_different_friends = {}
         for others, others_friends in self.users.items():
             if others != user:
@@ -91,20 +97,20 @@ class SocialNetwork:
                     total_people_met += 1
                 dict_of_different_friends[others] = num_of_different_friends
                 total_people_met += len(self.users[user]) - common_friends
-                jaccard_i[others] = common_friends/total_people_met
+                jaccard_index[others] = common_friends/total_people_met
 
-        #find people with the highest jaccard index; gives a list of names
+        # Get the user with high jaccard index
         highest_ji = 0
         potential_friends = []
-        for person, ji in jaccard_i.items():
-            if ji > highest_ji:
+        for person, ji_value in jaccard_index.items():
+            if ji_value > highest_ji:
                 potential_friends = [person]
-                highest_ji = ji
-            elif ji == highest_ji:
+                highest_ji = ji_value
+            elif ji_value == highest_ji:
                 potential_friends.append(person)
 
         #find person with highest number of different friends these highest jaccard people have with user
-        potential_friend = "no one is reccomended"
+        potential_friend = "No friends recommended for now!!"
         highest_diff_friends = 0
         for p_friend in potential_friends:
             if dict_of_different_friends.get(p_friend, 0) > highest_diff_friends:
@@ -146,9 +152,10 @@ def create_network_from_file(filename):
 
 
 def main():
-    network = create_network_from_file('simple.network')
+    # network = create_network_from_file('simple.network')
+    network = create_network_from_file('intermediate.network')
     print(network.to_dot())
-    print(network.suggest_friend('francis'))
+    print(network.suggest_friend('erin'))
 
 
 if __name__ == '__main__':
