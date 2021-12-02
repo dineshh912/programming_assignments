@@ -14,7 +14,10 @@ class SocialNetwork:
         Returns:
             [str]: A list of usernames
         '''
-        pass # FIXME
+        list_of_users = []
+        for user in self.users:
+            list_of_users.append(user)
+        return list_of_users
 
     def add_user(self, user):
         '''Add a user to the network
@@ -27,7 +30,8 @@ class SocialNetwork:
         Returns:
             None
         '''
-        pass # FIXME
+        self.users[user] = []
+        
 
     def add_friend(self, user, friend):
         '''Adds a friend to a user
@@ -45,7 +49,7 @@ class SocialNetwork:
         Returns:
             None
         '''
-        pass # FIXME
+        self.users[user].append(friend)
 
     def get_friends(self, user):
         '''Get the friends of a user
@@ -57,7 +61,8 @@ class SocialNetwork:
             [str]: The list of usernames of the user's friends
 
         '''
-        pass # FIXME
+        list_of_friends = self.users.get(user, [])
+        return list_of_friends
 
     def suggest_friend(self, user):
         '''Suggest a friend to the user
@@ -70,7 +75,43 @@ class SocialNetwork:
         Returns:
             str: The username of a new candidate friend for the user
         '''
-        pass # FIXME
+        # calculate the jaccard index
+        jaccard_i = {}
+        dict_of_different_friends = {}
+        for others, others_friends in self.users.items():
+            if others != user:
+                common_friends = 0
+                total_people_met = 0
+                num_of_different_friends = 0
+                for other_friend in others_friends:
+                    if other_friend in self.users[user]:
+                        common_friends += 1
+                    else:
+                        num_of_different_friends += 1
+                    total_people_met += 1
+                dict_of_different_friends[others] = num_of_different_friends
+                total_people_met += len(self.users[user]) - common_friends
+                jaccard_i[others] = common_friends/total_people_met
+
+        #find people with the highest jaccard index; gives a list of names
+        highest_ji = 0
+        potential_friends = []
+        for person, ji in jaccard_i.items():
+            if ji > highest_ji:
+                potential_friends = [person]
+                highest_ji = ji
+            elif ji == highest_ji:
+                potential_friends.append(person)
+
+        #find person with highest number of different friends these highest jaccard people have with user
+        potential_friend = "no one is reccomended"
+        highest_diff_friends = 0
+        for p_friend in potential_friends:
+            if dict_of_different_friends.get(p_friend, 0) > highest_diff_friends:
+                potential_friend = p_friend
+                highest_diff_friends = dict_of_different_friends.get(p_friend)
+        return potential_friend
+
 
     def to_dot(self):
         result = []
