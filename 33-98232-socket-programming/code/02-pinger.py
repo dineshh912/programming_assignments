@@ -51,9 +51,9 @@ def receiveOnePing(mySocket, ID, timeout, destAddr):
         # Take the header from the packet
         header = recPacket[20:28]
         # unpack the header
-        type, code, checksum, packetID, sequence = struct.unpack("bbHHh", header)
+        types, code, checksum, packetID, sequence = struct.unpack("bbHHh", header)
 
-        if packetID == ID and code == 0 and type == 0:
+        if packetID == ID and code == 0 and types == 0:
             bytesInDouble = struct.calcsize("d")
             timeSent = struct.unpack("d", recPacket[28:28 + bytesInDouble])[0]
             ts =  timeReceived - timeSent
@@ -125,6 +125,7 @@ def ping(host,timeout=1):
         time.sleep(1) # one second
     
     # calculate vars values and return them
+    # multiplying wih 1000 because it needs to be in ms
     packet_min = 1000 * min(res) 
     packet_avg = 1000 * (sum(res) / len(res))
     packet_max = 1000 * max(res)
