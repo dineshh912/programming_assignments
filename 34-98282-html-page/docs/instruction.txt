@@ -1,0 +1,41 @@
+our website must meet the following requirements:
+
+1. Five to seven pages in size.
+
+2. Be responsive.
+
+3. Contain a web form, such as a contact page.
+
+4. Must not contain content not covered in the course. For example, do not use JavaScript libraries such as jQuery.
+
+5. The website must include the following:
+
+a. The site must be developed using HTML5 and CSS3.
+
+b. A menu for easy, clear, and concise navigation
+
+c. An external CSS file used for formatting all pages of the website. The layout and style of the website must be formatted and controlled by the external CSS file only.
+
+(1) Must apply at least one different CSS3 effects, such as rounded corners, box shadows, text shadows, transitions, gradients, @font-face, transforms, opacity, or animations.
+
+(2) CSS effects must add to the visual appeal and usability.
+
+(3) Must use both "id" and "class" selectors appropriately.
+
+d. Contain comments through out your code documenting your website internally. Each page must contain an information comment header.
+
+e. All HTML and CSS must not have any validation errors using the w3.org validation tools.
+
+f. Contain at least one ordered or unordered list.
+
+g. Contain at lease two links: One link links within your website; and one link to an external web page, such as to the school.
+
+h. Include at least one image.
+
+i. Contain at least one web table.
+
+j. Include an audio or a video.
+
+Make sure that your comments in the website code refer to the coding references above. 
+The audio and video files must be small and the size not exceeds 500k each or 1mb combined.
+
