@@ -43,12 +43,6 @@ header {
     text-decoration: none;
 }
 
-.navigation li a i {
-    width: 100%;
-    font-size: 20px;
-    margin-bottom: 7px;
-}
-
 .show-menu-btn,
 .hide-menu-btn {
     transition: 0.4s;
@@ -102,10 +96,6 @@ header {
     .navigation li a {
         padding: 15px 15px;
         text-align: left;
-    }
-    .navigation li a i {
-        width: auto;
-        font-size: 20px;
     }
     .hide-menu-btn {
         position: absolute;
