@@ -20,7 +20,6 @@ from game2d import *
 from consts import *
 from models import *
 import random
-import math
 
 # PRIMARY RULE: Wave can only access attributes in models.py via getters/setters
 # Wave is NOT allowed to access anything in app.py (Subcontrollers are not 
@@ -73,41 +72,77 @@ class Wave(object):
     # You may change any attribute above, as long as you update the invariant
     # You may also add any new attributes as long as you document them.
     # LIST MORE ATTRIBUTES (AND THEIR INVARIANTS) HERE IF NECESSARY
+    #
+    # Attribute _direction: the direction the aliens are moving
+    # Invariant: _direction is a string for either left or right
+    #
+    # Attribute _newBolt: whether or not the player can fire a new bolt
+    # Invariant: _newBolt is a boolean if the player is ready to fire a bolt
+    #
+    # Attribute _alienRate: how many steps until an alien shoots a bolt
+    # Invariant: _alienRate is a int for how many steps until an alien fires
+    #
+    # Attribute _shooter: the alien in a row that will shoot a bolt
+    # Invariant: _shooter is an alien object
+    #
+    # Attribute _stepaccum: counts the amount of steps an alien has taken
+    # Invariant: _stepaccum is an int for how many steps have been taken
+    #
+    # Attribute _isPaused: an indicator if the game should be paused
+    # Invariant: _isPaused is a boolean
+    #
+    # Attribute _gameDone: an indicator if the game is over
+    # Invariant: _gameDone is a boolean
+    #
+    # Attribute _gameWon: an indicator if the game is won or lost(assume game is
+    # already over)
+    # Invariant: _gameWon is a boolean
+    #
+    # Attribute _score: the score value the player has
+    # Invariant: _score is an int >= 0
 
     
     # GETTERS AND SETTERS (ONLY ADD IF YOU NEED THEM)
-    def getLives(self):
-        """ Returns lives the ship have
+    def isGameWon(self):
+        """
+        Returns whether or not the game has been won. This method assumes that
+        the game has been completed and self._state in app.py is STATE_COMPLETE
+        """
+        return self._gameWon
 
-        Returns:
-            [type]: [description]
+    def isGameDone(self):
+        """
+        Returns whether or not the game is done and if the game should switch to
+        STATE_COMPLETE
+        """
+        return self._gameDone
+
+    def getIsPaused(self):
+        """
+        Returns whether or not the game is paused
+        """
+        return self._isPaused
+
+    def setIsPaused(self,value):
+        """
+        Sets self._isPaused to follow whether or not the game is paused
+        Parameter: value is whether or not the game is paused
+        Precondition: value is a boolean
+        """
+        assert type(value) == bool,repr(value)+' is not a valid type'
+        self._isPaused = value
+
+    def getLives(self):
+        """
+        Returns self._lives, the current amount of lives the player has
         """
         return self._lives
-    
-    def getShipStatus(self):
-        """Return if ship is alive or not
 
-        Returns:
-            [type]: [description]
+    def getScore(self):
         """
-        return not (self._ship is None)
-    
-    def getWaveState(self):
+        Returns self._score, the score value a player has
         """
-            Return _wavestatus
-
-        Returns:
-            [type]: [description]
-        """
-        return self._waveState
-    
-    def setShip(self, ship):
-        """ set player ship _ship
-
-        Args:
-            ship ([type]): [description]
-        """
-        self._ship = ship
+        return self._score
         
     # INITIALIZER (standard form) TO CREATE SHIP AND ALIENS
     def __init__(self):
@@ -115,22 +150,22 @@ class Wave(object):
             Initializes the wave with default values
         
         """
-        self._aliens=[]
-        self._exploded = []
-        self._boss = None
-        self.__makeAliens()
         self._ship = Ship()
-        self._dline = GPath(points=[START_DEFENSE_LINE,DEFENSE_LINE,
-                                    END_DEFENSE_LINE, DEFENSE_LINE],linewidth=1,
-                            linecolor="black")
-        self._alienDirection = 1
+        self._aliens = self._createAliens(ALIENS_IN_ROW,ALIEN_ROWS)
+        self._dline = GPath(points=[0,DEFENSE_LINE,GAME_WIDTH,DEFENSE_LINE],linewidth=2,linecolor='black')
+        self._time=0
+        self._direction = 'right'
         self._bolts = []
-        self._stepsUntilFire = random.randint(1,BOLT_RATE)
-        self._lives = SHIP_LIVES
-        self._bossLives = BOSS_LIVES
-        self._waveState = IN_PROGRESS
-        self._time = 0
-        self._cumulativeTime = 0
+        self._newBolt = True
+        self._alienRate = random.randint(1,BOLT_RATE)
+        self._shooter = None
+        self._stepaccum = 0
+        self._lives = 3
+        self._isPaused = False
+        self._gameDone = False
+        self._gameWon = None
+        self._score = 0
+
         
     # UPDATE METHOD TO MOVE THE SHIP, ALIENS, AND LASER BOLTS
     def update(self, keyList, dt):
@@ -152,16 +187,18 @@ class Wave(object):
         Parameter dt: The time in seconds since last update
         Precondition: dt is a number (int or float)
         """
-        userDirection = 1*keyList[0]-1*keyList[1] 
-        if not (self._ship is None):
-            self.__shipHandler(userDirection)
-        self.__alienShiftController(dt)
-        self.__collisionHandler()
-        if self.__checkCompletion():
-            self._boss = Boss(GAME_WIDTH/2, GAME_HEIGHT+DEFENSE_LINE/2)
-        self.__explosionHandler()
-        self.__boltController(keyList[2])
-        self.__bossController(dt)
+        self._gameOver()
+        self._changeShip(input)
+        self._changeAlien(dt)
+        self._verticalMove()
+        self._createBolt(input)
+        self._changeBolt()
+        self._removeBolt()
+        self._oneBolt()
+        if self._stepaccum == 0:
+            self._chooseAlien()
+        self._alienBolt()
+        self._collision()
 
 
     # DRAW METHOD TO DRAW THE SHIP, ALIENS, DEFENSIVE LINE AND BOLTS
@@ -178,353 +215,327 @@ class Wave(object):
         """
         for row in self._aliens:
             for alien in row:
-                if not (alien is None):
+                if alien is not None:
                     alien.draw(view)
-        for alien in self._exploded:
-            alien.draw(view)
-        if not (self._ship is None):
+        if self._ship is not None:
             self._ship.draw(view)
         self._dline.draw(view)
         for bolt in self._bolts:
             bolt.draw(view)
-        if not self._boss is None:
-            self._boss.draw(view)
             
     # HELPER METHODS FOR COLLISION DETECTION
-    def __makeAliens(self):
+    def _gameOver(self):
         """
-        Populates _aliens with the initial grid of aliens.
-        
-        Makes _aliens a 2d list of ALIEN_ROWS rows and ALIENS_IN_ROW columns of
-        Alien objects, with the appropriate starting coordinates and 
-        ALIEN_H_SEP separation between each horizontally and ALIEN_V_SEP
-        separation betwen each vertically. Also sets the alien types so that
-        two rows of each type are made, starting from the bottom to the top.
+        Checks whether or not the game is over and whether or not the player won
+        the game or lost it and returns booleans as required.
+        The ways the player can lose the game is if the aliens reach the defense
+        line or if the player runs out of lives. The player wins the game if they
+        destroy all of the aliens on the screen.
         """
-        self._aliens = []
+        aliencount = 0
         for row in range(ALIEN_ROWS):
-            self._aliens.append([])
-            for column in range(ALIENS_IN_ROW):
-                #(int(row/2)%3) figures out alien image from row number.
-                self._aliens[row].append(Alien((ALIEN_H_SEP*(column+1) + ALIEN_WIDTH*(column+0.5)),
-                    (GAME_HEIGHT-ALIEN_CEILING-ALIEN_HEIGHT//2 \
-                     -(ALIEN_ROWS-row-1)*(ALIEN_HEIGHT+ALIEN_V_SEP)),
-                    (int(row/2)%3)))
+            for alien in range(ALIENS_IN_ROW):
+                if self._aliens[row][alien] is None:
+                    aliencount+= 1
+                if self._aliens[row][alien] is not None and self._aliens[row][alien].getY()-ALIEN_HEIGHT/2 <= DEFENSE_LINE:
+                    self._gameDone = True
+                    self._gameWon = False
+        if self._lives == 0:
+            self._gameDone = True
+            self._gameWon = False
+        elif aliencount == ALIEN_ROWS*ALIENS_IN_ROW:
+            self._gameDone = True
+            self._gameWon = True
                 
-    def __alienShiftController(self, dt):
+    def createShip(self):
         """
-        Manages how the aliens shift across the screen.
-        
-        It finds the leftmost and rightmost Aliens still on the screen and
-        passes their location to __handleAlienWalk for it to decide the
-        movement. Also, it finds the bottommost Alien and if it is below the
-        defense line, it sets the _waveState to WAVE_LOST. Also, it only makes
-        the aliens shift when _time >= ALIEN_SPEED, and only lets them fire
-        bolts when they shift.
-        
+        Creates a ship object with the necessary constants
+        """
+        self._ship = Ship(GAME_WIDTH/2,SHIP_BOTTOM+SHIP_HEIGHT/2,
+        SHIP_WIDTH,SHIP_HEIGHT,SHIP_IMAGE)
+
+    def _collision(self):
+        """
+        Checks whether or not an alien collides with a ship bolt and whether or
+        not a ship collides with an alien bolt. If it does collide, the ship/alien
+        as well as the bolt is deleted from the list(with the case of the alien,
+        it becomes a None value). If the ship is hit by an alien bolt, the player
+        loses a life.
+        """
+        for row in range(ALIEN_ROWS):
+            for alien in range(ALIENS_IN_ROW):
+                for bolt in range(len(self._bolts)):
+                    if self._aliens[row][alien] is not None:
+                        if self._aliens[row][alien].collides(self._bolts[bolt]):
+                            self._score += self._aliens[row][alien].getScore()
+                            self._aliens[row][alien] = None
+                            del self._bolts[bolt]
+                            self._newBolt = True
+        for bolt in range(len(self._bolts)):
+            if self._ship is not None:
+                if self._ship.collides(self._bolts[bolt]):
+                    self._ship = None
+                    del self._bolts[bolt]
+                    self._newBolt = True
+                    self._lives -= 1
+                    if self._lives >= 1:
+                        self._isPaused = True
+
+    def _changeBolt(self):
+        """
+        A method to update and move the alien and ship bolts in their corresponding
+        directions.
+        """
+        for bolt in self._bolts:
+            if bolt.isPlayerBolt()==True:
+                bolt.setY(bolt.getY()+BOLT_SPEED)
+            else:
+                bolt.setY(bolt.getY()-BOLT_SPEED)
+
+    def _changeShip(self,input):
+        """
+        A method to move the ship left or right. If the ship is at the sides of
+        the screen, the ship is not allowed to move further left or right. If a
+        ship doesn't exist, the method doesn't not update anything.
+        Parameter input: Allows functionality with user input to move ship
+        Precondition: input is an instance of GInput (inherited from GameApp)
+        """
+        da = 0
+        if input.is_key_down('left'):
+            if self._ship is not None and min(self._ship.getX(),
+            SHIP_WIDTH/2)==self._ship.getX():
+                da=0
+            else:
+                da -= SHIP_MOVEMENT
+        if input.is_key_down('right'):
+            if self._ship is not None and max(self._ship.getX(),
+            GAME_WIDTH-SHIP_WIDTH/2)==self._ship.getX():
+
+                da=0
+            else:
+                da += SHIP_MOVEMENT
+        if self._ship is not None:
+            self._ship.setX(self._ship.getX()+da)
+
+    def _changeAlien(self, dt):
+        """
+        A method to move the alien wave either to the right or the left by the
+        amount ALIEN_H_WALK.
         Parameter dt: The time in seconds since last update
         Precondition: dt is a number (int or float)
         """
         self._time += dt
-        if self._time >= ALIEN_SPEED and self._boss is None:
-            leftEdge = GAME_WIDTH
-            rightEdge = GAME_LEFT_EDGE
+        if self._time >= ALIEN_SPEED:
             for row in range(ALIEN_ROWS):
-                leftestAlien = None
-                rightestAlien = None
-                for col in range(ALIENS_IN_ROW):
-                    if not self._aliens[row][ALIENS_IN_ROW-1-col] is None:
-                        leftestAlien = self._aliens[row][ALIENS_IN_ROW-1-col]
-                    if not self._aliens[row][col] is None:
-                        rightestAlien = self._aliens[row][col]
-                if not leftestAlien is None:
-                    leftEdge = min(leftEdge, leftestAlien.getX()-ALIEN_WIDTH//2)
-                if not rightestAlien is None:
-                    rightEdge=max(rightEdge,rightestAlien.getX()+ALIEN_WIDTH//2) 
-            self.__handleAlienWalk(rightEdge, leftEdge)     
-            bottommostAlien = None
-            for row in range(ALIEN_ROWS):
-                for col in range(ALIENS_IN_ROW):
-                    if not self._aliens[ALIEN_ROWS-row-1][col] is None:
-                        bottommostAlien = self._aliens[ALIEN_ROWS-row-1][col]
-            if not bottommostAlien is None and bottommostAlien.getY() \
-                                            -ALIEN_HEIGHT/2 < DEFENSE_LINE:
-                self._waveState = WAVE_LOST
-            self.__alienBoltFire()
+                for alien in range(ALIENS_IN_ROW):
+                    alienvar = self._aliens[row][alien]
+                    if self._direction == 'right' and alienvar is not None:
+                        alienvar.setX(alienvar.getX()+ALIEN_H_WALK)
+                    elif self._direction == 'left' and alienvar is not None:
+                        alienvar.setX(alienvar.getX()-ALIEN_H_WALK)
+            self._stepaccum += 1
             self._time = 0
-    
-    def __handleAlienWalk(self, rightEdge, leftEdge):
+
+    def _verticalMove(self):
         """
-        Decides how to move aliens across the screen.
-        
-        If the aliens exceed the left or right bounds of the game screen, it
-        shifts the aliens down, reverses their direction, and moves them back to
-        the bound. Otherwise,it just moves all of them in the current direction.
-        
-        Parameter rightEdge: the x coordinate of the right edge of the
-                             rightmost Alien on the screen.
-        Precondition: ridgeEdge is an int or float between ALIEN_WIDTH/2 and
-                      GAME_WIDTH
-        
-        Parameter leftEdge: the x coordinate of the left edge of the
-                             leftmost Alien on the screen.
-        Precondition: leftEdge is an int or float between 0 and
-                      GAME_WIDTH-ALIEN_WIDTH/2
+        A method to move the alien wave down ALIEN_V_WALK when it reaches the edge
+        of the screen. It checks whether or not the furthest alien on the left
+        or right is too close to move the aliens
         """
-        if rightEdge > (GAME_WIDTH - ALIEN_H_SEP):
-                self._alienDirection = -1
-                self.__alienShifter(-(rightEdge-(GAME_WIDTH-ALIEN_H_SEP)),
-                                    ALIEN_V_SEP)
-        elif leftEdge < ALIEN_H_SEP:
-            self._alienDirection = 1
-            self.__alienShifter(ALIEN_H_SEP - leftEdge, ALIEN_V_SEP)
-        else:
-            self.__alienShifter(ALIEN_H_WALK*self._alienDirection,0)
-                
-    def __alienShifter(self,x,y):
-        """
-        Moves the aliens across the screen and updates the sprite frame.
-        
-        Parameter x: the horizontal pixel distance to move all the alienns
-        Precondition: x is an int or float
-        
-        Parameter y: the vertical pixel to move all the aliens down (negated)
-        Precondition: y is an int or float
-        """
-        for row in self._aliens:
-            for alien in row:
-                if not alien is None:
-                    alien.setX(alien.getX() + x)
-                    alien.setY(alien.getY() - y)
-                    alien.setFrame((alien.getFrame()+1)%2)
-                    
-    def __boltController(self, fire):
-        """
-        Controls when the player fires bolts and deletion of bolts.
-        
-        Lets the player create a bolt when the spacebar is pressed and there
-        isn't already a player bolt on the screen. The function does the math
-        so that the bolt travels in the same angle as the player's ship and
-        calculates x and y components of velocity so that it moves BOLT_SPEED
-        only in its direction. The function also deletes alien bolts that go
-        below the game screen, player bolts that go above the game screen or
-        past the left and right bounds since my extension of bolts allows that.
-        
-        Parameter fire: whether the player has pressed/is pressing spacebar
-        Precondition: fire is True if spacebar is pressed, False otherwise.
-        """
-        playerBolt = False
-        n = 0
-        while n < len(self._bolts):
-            if self._bolts[n].getyVelocity()>0:
-                playerBolt = True
-            self._bolts[n].setY(self._bolts[n].getY() \
-                                + self._bolts[n].getyVelocity())
-            self._bolts[n].setX(self._bolts[n].getX() \
-                                + self._bolts[n].getxVelocity())
-            if ((self._bolts[n].getY() - BOLT_HEIGHT/2) > GAME_HEIGHT
-                ) or ((self._bolts[n].getY() + BOLT_HEIGHT/2) < 0
-                ) or ((self._bolts[n].getX()+BOLT_HEIGHT//2)<0
-                ) or ((self._bolts[n].getX()-BOLT_HEIGHT//2)>GAME_WIDTH):
-                del self._bolts[n]
-                n -= 1
-            n += 1
-        if fire and (not playerBolt) and (not self._ship is None):
-            #Math for rotated coordinates
-            angle = math.pi*(self._ship.getAngle())/180
-            self._bolts.append(Bolt(-1*(SHIP_HEIGHT//2+BOLT_HEIGHT//2) \
-                                    *math.sin(angle)+self._ship.getX(),
-                                    (SHIP_HEIGHT//2+BOLT_HEIGHT//2) \
-                                    *math.cos(angle)+SHIP_BOTTOM+SHIP_HEIGHT//2,
-                                    -BOLT_SPEED*math.cos(math.pi*(
-                                        90-self._ship.getAngle())/180),
-                                    BOLT_SPEED*math.sin(math.pi*(90-abs(
-                                        self._ship.getAngle()))/180),
-                                    self._ship.getAngle()))
-            
-    def __alienBoltFire(self):
-        """
-        Makes the aliens fire bolts.
-        
-        Only lets the aliens fire if _stepsUntilFire steps have been made. Then
-        it finds all the columns that still have aliens in them. Then it
-        randomly chooses one of these columns. Then it finds the bottommost
-        Alien in that column and fires a bolt from its location.
-        _stepsUntilFire is reset to a new random between 1 and BOLT_RATE.
-        """
-        self._stepsUntilFire -= 1
-        if self._stepsUntilFire == 0:
-            nonemptyColumns = []
-            for col in range(ALIENS_IN_ROW):
-                nonempty = False
-                for row in range(ALIEN_ROWS):
-                    if not(self._aliens[row][col] is None):
-                        nonempty = True
-                if nonempty:
-                    nonemptyColumns += [col]
-            if len(nonemptyColumns) == 0:
-                return
-            randomColumn = random.choice(nonemptyColumns)
+        leftAlien = self._verticalMoveHelperLeft()
+        rightAlien = self._verticalMoveHelperRight()
+        if rightAlien is not None and leftAlien is not None:
+            rightBoundary = GAME_WIDTH-rightAlien.getX()-ALIEN_WIDTH//2
+            leftBoundary = leftAlien.getX()-ALIEN_WIDTH//2
+
+        if rightAlien is not None and ALIEN_H_SEP > rightBoundary:
             for row in range(ALIEN_ROWS):
-                if (not self._aliens[ALIEN_ROWS-row-1][randomColumn] is None):
-                    bottomAlien = self._aliens[ALIEN_ROWS-row-1][randomColumn]
-                
-            self._bolts.append(Bolt(bottomAlien.getX(),bottomAlien.getY() \
-                                    -ALIEN_HEIGHT/2-BOLT_HEIGHT/2,0,
-                                    -BOLT_SPEED,0))
-            self._stepsUntilFire = random.randint(1,BOLT_RATE)
-            
-    def __collisionHandler(self):
+                for alien in range(ALIENS_IN_ROW):
+                    alienvar = self._aliens[row][alien]
+                    if self._aliens[row][alien] is not None:
+                        alienvar.setY(alienvar.getY()-ALIEN_V_WALK)
+                        alienvar.setX(alienvar.getX()-ALIEN_H_WALK)
+            self._direction = 'left'
+        if leftAlien is not None and leftBoundary < ALIEN_H_SEP:
+            for row in range(ALIEN_ROWS):
+                for alien in range(ALIENS_IN_ROW):
+                    alienvar = self._aliens[row][alien]
+                    if self._aliens[row][alien] is not None:
+                        alienvar.setY(alienvar.getY()-ALIEN_V_WALK)
+                        alienvar.setX(alienvar.getX()+ALIEN_H_WALK)
+            self._direction = 'right'
+
+    def _verticalMoveHelperRight(self):
         """
-        Handles collisions of bolts with aliens, player ship, and the Boss.
-        
-        Checks whether each of the bolts in _bolts has collided with an alien,
-        the ship, or the boss. If there is a collision, that bolt is deleted.
-        If the collision is with the player or the boss, they lose one of their
-        lives. If ship has no lives left, _waveState  is set to WAVE_LOST. If
-        the boss has no lives left, _waveState is set to WAVE_WON. Also, only
-        bolts made by the player can hurt aliens or the boss, and the vice-
-        versa.
+        A helper method to find the most right column in the alien wave that still
+        has an alien.
         """
-        self.__collisionAlienHandler()
-        n = 0
-        while n < len(self._bolts):
-            if (not self._ship is None) and self._ship.collides(self._bolts[n]):
-                self._ship = None
-                self._lives -= 1
-                self._bolts = []
-                if self._lives <= 0:
-                    self._waveState = WAVE_LOST
-            n += 1
-        n = 0
-        while n < len(self._bolts):
-            if (not self._boss is None) and self._boss.collides(self._bolts[n]):
-                self._bossLives -= 1
-                del self._bolts[n]
-                n -= 1
-                if self._bossLives <= 0:
-                    self._waveState = WAVE_WON
-            n += 1
-            
-    def __collisionAlienHandler(self):
-        """
-        Handles collisions between player bolts and the aliens, incl. explosions
-        
-        For each alien in _aliens and each bolts in _bolts, checks that the bolt
-        was fired from the player and that it collided with the alien. If so,
-        the Alien is set to None, and an exploded Alien animation is added to
-        _exploded. The bolt is deleted from the screen.
-        """
-        for row in range(ALIEN_ROWS):
-            for col in range(ALIENS_IN_ROW):
-                    n = 0
-                    while n < len(self._bolts):
-                        if (not self._aliens[row][col] is None) and \
-                                self._aliens[row][col].collides(self._bolts[n]):
-                            self._exploded.append(Alien(
-                                self._aliens[row][col].getX(),
-                                self._aliens[row][col].getY(),(int(row/2)%3)))
-                            self._exploded[-1].setFrame(2)
-                            self._aliens[row][col] = None
-                            del self._bolts[n]
-                            n -= 1
-                        n += 1
-                        
-    def __checkCompletion(self):
-        """
-        Returns whether the player has defeated every element.
-        
-        If there are any Aliens in _aliens, it returns False. If everything is
-        None, it is True. Does not include the Boss.
-        """
-        for row in self._aliens:
-            for alien in row:
-                if not alien is None:
-                    return False
-        return True
-        
-    def __explosionHandler(self):
-        """
-        Handles the explosion animation of aliens.
-        
-        For every exploded alien in _exploded (they are separated because
-        exploded aliens shouldn't walk or be able to fire bolts), it updates the
-        frame. If the animation sequence is finished, it is deleted. Slowing
-        down the animation sequence is done in models.py.
-        """
-        n = 0
-        while n < len(self._exploded):
-            currentFrame = self._exploded[n].getFrame()
-            if currentFrame < 5:
-                self._exploded[n].setFrame(currentFrame+1)
+        rightcolumn = ALIENS_IN_ROW-1
+        rightrow = ALIEN_ROWS-1
+        flag1 = False
+        while not flag1:
+            if self._aliens[rightrow][rightcolumn] is not None:
+                rightAlien = self._aliens[rightrow][rightcolumn]
+                flag1 = True
+            elif rightcolumn == 0 and rightrow == 0:
+                rightAlien = None
+                flag1 = True
+            elif rightrow == 0:
+                rightcolumn -= 1
+                rightrow = ALIEN_ROWS-1
             else:
-                del self._exploded[n]
-                n -= 1
-            n += 1
-                
-    def __shipHandler(self, userDirection):
+                rightrow -= 1
+        return rightAlien
+
+    def _verticalMoveHelperLeft(self):
         """
-        Handles the movement of the ship according to my extension.
-        
-        The ships moves according to velocity and acceleration instead of a
-        constant speed. Pressing the left or right arrow keys adds positive or
-        negative velocity. Pressing both means 0 acceleration. There is also a
-        constant deceleration SHIP_DECELERATION which moves the absolute value
-        of the velocity to 0 to make natural, inertial movement. If the ship
-        hits the left or right bounds of the game screen, its velocity is reset
-        to 0. Finally, the function also rotates the angle of the ship to agree
-        with its velocity, making it look like it's turning.
-        
-        Parameter userDirection: the direction user input tells the ship to move
-        Precondition: userDirection is -1 if to the left, 1 if to the right, or
-                      0 if no change.
+        A helper method to find the most right column in the alien wave that still
+        has an alien.
         """
-        if self._ship.getVelocity() > 0:
-            decelerationFactor = SHIP_DECELERATION
-        elif self._ship.getVelocity() < 0:
-            decelerationFactor = -SHIP_DECELERATION
+        leftcolumn = 0
+        leftrow = ALIEN_ROWS-1
+        flag2 = False
+        while not flag2:
+            if self._aliens[leftrow][leftcolumn] is not None:
+                leftAlien = self._aliens[leftrow][leftcolumn]
+                flag2 = True
+            elif leftcolumn == ALIENS_IN_ROW-1 and leftrow == 0:
+                leftAlien = None
+                flag2 = True
+            elif leftrow == 0:
+                leftcolumn += 1
+                leftrow = ALIEN_ROWS-1
+            else:
+                leftrow -= 1
+        return leftAlien
+
+    def _createBolt(self,input):
+        """
+        When given user input, a ship bolt is created and added onto the list
+        self._bolts and when a ship exists.
+        Parameter input: Allows functionality with user input to create a bolt
+        Precondition: input is an instance of GInput (inherited from GameApp)
+        """
+        if self._ship is not None:
+            xbolt = self._ship.getX()
+            ybolt = self._ship.getY()+SHIP_HEIGHT/2+BOLT_HEIGHT/2
+            if input.is_key_down('up') and self._newBolt == True:
+                self._bolts.append(Bolt(xbolt,ybolt,BOLT_WIDTH,
+                BOLT_HEIGHT,BOLT_SPEED))
+
+        return self._bolts
+
+    def _chooseAlien(self):
+        """
+        This method determines a random column of aliens to fire a bolt as well
+        as the lowest alien in that random column to fire. It makes sure that
+        a None value Alien doesn't fire and crash the program.
+        """
+        flag = False
+        while flag == False:
+            noneind = 0
+            column = random.randint(0,ALIENS_IN_ROW-1)
+            for row in range(ALIEN_ROWS):
+                if self._aliens[row][column] is None:
+                    noneind += 1
+            if ALIEN_ROWS != noneind:
+                flag = True
+        for row in range(ALIEN_ROWS-1,-1,-1):
+            if self._aliens[row][column] is not None:
+                self._shooter=self._aliens[row][column]
+
+    def _alienBolt(self):
+        """
+        This method fires a bolt from the alien that was choosen from the method
+        _chooseAlien. It creates a bolt with negative velocity to differentiate
+        it from a ship bolt and then appends the newly created bolt to self._bolts.
+        It also resets self._stepaccum to make sure there is a delay between
+        the next alien firing.
+        """
+        if self._stepaccum == self._alienRate:
+            boltYCoor = self._shooter.getY()-ALIEN_HEIGHT//2
+            self._bolts.append(Bolt(self._shooter.getX(),boltYCoor,BOLT_WIDTH,
+            BOLT_HEIGHT,-BOLT_SPEED))
+            self._stepaccum = 0
+            self._alienRate = random.randint(1,BOLT_RATE)
+
+    def _oneBolt(self):
+        """
+        A method to check if there is only one player bolt on the screen. If there
+        is one bolt, then the player cannot fire again until the bolt goes off
+        the screen.
+        """
+        for bolt in self._bolts:
+            if bolt.isPlayerBolt()==True:
+                self._newBolt = False
+
+    def _removeBolt(self):
+        """
+        Removes bolts from the screen once they are out of bounds. For player bolts,
+        it then allows the player to fire another bolt.
+        """
+        boltPos = []
+        for bolt in range(len(self._bolts)):
+            if self._bolts[bolt].getY()-BOLT_HEIGHT/2 >= GAME_HEIGHT:
+                if self._bolts[bolt].isPlayerBolt():
+                    self._newBolt = True
+                boltPos.append(bolt)
+            elif self._bolts[bolt].getY()+BOLT_HEIGHT/2 <= 0:
+                boltPos.append(bolt)
+        for pos in boltPos:
+            del self._bolts[pos]
+
+    def _createAliens(self,row,col):
+        """
+        This method initializes a wave of aliens and then appends them to
+        self._aliens in the wave object.
+        Parameter: row is the amount of aliens in a rows
+        Precondition: row is an integer equal to ALIENS_IN_ROW
+        Parameter; col is the amount of alien rows
+        Precondition: col is an integer equal to ALIEN_ROWS
+        """
+        assert type(row) == int and row == ALIENS_IN_ROW,repr(row)+ 'is not a '+\
+        'valid type and does not equal the correct constant'
+        assert type(col) == int and col == ALIEN_ROWS,repr(col)+' is not a valid type '+\
+        ' and does not equal the correct constant'
+        accum = []
+        noSpace=ALIEN_ROWS-0.5
+
+        bottom = ALIEN_CEILING+ALIEN_HEIGHT*(noSpace)+ALIEN_V_SEP*(ALIEN_ROWS-1)
+        bottombegin = GAME_HEIGHT-bottom
+        rowcounter = 0
+        alienimage = 0
+        for col in range(0,col):
+            variable = []
+            if alienimage == len(ALIEN_IMAGES):
+                alienimage = 0
+            leftbegin = ALIEN_H_SEP+ALIEN_WIDTH//2
+            for alien in range(0,row):
+                variable.append(Alien(leftbegin,bottombegin,ALIEN_IMAGES[alienimage],self._setAlienScore(col)))
+                leftbegin +=ALIEN_H_SEP+ALIEN_WIDTH
+            bottombegin +=ALIEN_V_SEP+ALIEN_HEIGHT
+            rowcounter += 1
+            if rowcounter == 2:
+                rowcounter =0
+                alienimage +=1
+            accum.append(variable)
+        return accum
+
+    def _setAlienScore(self,row):
+        """
+        Returns a score value for the aliens in the given row. For every higher
+        alien, the score value should increase by 20 points.
+        Parameter: row is the row to which assign a score to
+        Precondition: row is an int >= 0 and <= to ALIEN_ROWS
+        """
+        assert type(row) == int and row >= 0 and row <= ALIEN_ROWS,repr(row)+\
+        ' is not a valid type or valid row'
+        isEven = None
+        score = 20
+        if row % 2 == 0:
+            tracker = row // 2
         else:
-            decelerationFactor = 0
-        self._ship.setVelocity(self._ship.getVelocity() + userDirection*\
-                               SHIP_ACCELERATION-decelerationFactor)
-        self._ship.setX(self._ship.getX()+self._ship.getVelocity())
-        if self._ship.getX()>=GAME_WIDTH-SHIP_WIDTH//2 or \
-                                self._ship.getX()<=SHIP_WIDTH//2:
-            self._ship.setVelocity(0)
-        self._ship.setAngle(self._ship.getVelocity()*-ANGLE_MULTIPLIER)
-        
-    def __bossController(self, dt):
-        """
-        Handles movement and bolt firing of the boss.
-        
-        The boss doesn't move in steps. It moves according to a parametric
-        equation to make it look like it's moving somewhat unpredictably and so
-        that it moves widely across the screen. _cumulativeTime is used as the
-        parameter.
-        
-        The boss fires bolts when every interval of BOSS_FIRE_RATE. It fires
-        volleys of between 1 and 9 bolts. The function does the math so that the
-        bolts are equally spaced, rotated the proper angle, and traveling at the
-        right x- and y-components of velocity so that BOLT_SPEED is preserved,
-        and the math works for any number of bolts.
-        """
-        if not self._boss is None:
-            self._cumulativeTime += dt/BOSS_SPEED_FACTOR
-            #parametric equation for x
-            self._boss.setX(GAME_WIDTH/2 + P_X*math.cos(
-                P_ALPHA*self._cumulativeTime))
-            #parametric equation for y
-            self._boss.setY((GAME_HEIGHT+DEFENSE_LINE)/2 + P_Y*math.sin(
-                P_BETA*self._cumulativeTime))
-            if self._time > BOSS_FIRE_RATE:
-                boltsFired = random.randrange(1,9)
-                for x in range(boltsFired):
-                    angle = math.pi*((x+1)/(boltsFired+1))
-                    self._bolts.append(Bolt(self._boss.getX(),
-                                            self._boss.getY()-ALIEN_HEIGHT/2,
-                                            BOLT_SPEED*math.cos(angle),
-                                            -BOLT_SPEED*math.sin(angle),
-                                            (DEGREES/2)*(boltsFired-1)/\
-                                            (boltsFired+1)-(DEGREES/(
-                                                boltsFired+1)*x)))
-                self._time = 0
+            tracker = row // 2
+        for value in range(tracker):
+            score += 20
+        return score

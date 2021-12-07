@@ -88,13 +88,13 @@ class Invaders(GameApp):
         to play a game.
         """
         self._state = STATE_INACTIVE
+        self._last = 0
         self._welcomeScreenMessage =  GLabel(text="Press 'S' to Play",
                                       font_size=ARCADE_LARGE,font_name=ARCADE_FONT,
                                       x = GAME_WIDTH//2, y = GAME_HEIGHT//2,
                                       linecolor='black')
         self._text = self._welcomeScreenMessage
         self._wave = None
-        self._keyPressed = False
 
 
     def update(self,dt):
@@ -149,28 +149,19 @@ class Invaders(GameApp):
         Precondition: dt is a number (int or float)
         """
         # IMPLEMENT ME
-        # based on state value intializing 
+        self.activeState()
         if self._state == STATE_NEWWAVE:
             self._wave = Wave()
-            self._state = STATE_ACTIVE
-            self._text = None
-        if self._state == STATE_INACTIVE:
-            # Check whether to show welcome screen or intitial stage
-            if(not self._keyPressed and self.input.is_key_down('s')):
-                self._state = STATE_NEWWAVE
-                self._welcomeScreenMessage = None
-            self._keyPressed = self.input.is_key_down('s')
-        # active state
-        if self._state == STATE_ACTIVE:
-            self.activeState(dt)
-        if self._state == STATE_PAUSED:
-            if (not self._keyPressed and self.input.is_key_down('b')):
-                self._state = STATE_CONTINUE
-            self._keyPressed = self.input.is_key_down('b')
-        if self._state == STATE_CONTINUE:
-                self._wave.setShip(Ship())
-                self._state = STATE_ACTIVE
-                self._text = None
+        elif self._state == STATE_ACTIVE:
+            self._wave.update(self.input, dt)
+            if self._wave.isGameDone():
+                self._state = STATE_COMPLETE
+            elif self._wave.isGamePaused():
+                self._state = STATE_PAUSED
+        elif self._state == STATE_CONTINUE:
+            self._wave.createShip()
+            self._state = STATE_ACTIVEs
+
 
     def draw(self):
         """
@@ -186,41 +177,58 @@ class Invaders(GameApp):
         class Wave.  We suggest the latter.  See the example subcontroller.py
         from class.
         """
-
-        if self._state == STATE_ACTIVE or self._state == STATE_PAUSED:
-            self._wave.draw(self.view)
-        if self._state != STATE_ACTIVE:
+        if self._state == STATE_INACTIVE:
             self._text.draw(self.view)
+        elif self._state == STATE_NEWWAVE:
+            self._wave.draw(self.view)
+        elif self._state == STATE_ACTIVE:
+            self._wave.draw(self.view)
+        elif self._state == STATE_PAUSED:
+            self._pausetext = GLabel(text="Press 'S' to Resume",
+                                      font_size=ARCADE_LARGE,font_name=ARCADE_FONT,
+                                      x = GAME_WIDTH//2, y = GAME_HEIGHT//2,
+                                      linecolor='black')
+            self._wave.draw(self.view)
+            self._pausetext.draw(self.view)
+        elif self._state == STATE_COMPLETE:
+            if self._wave.isGameWon() == True:
+                self._endtext = GLabel(text="Victory!!!",
+                                      font_size=ARCADE_LARGE,font_name=ARCADE_FONT,
+                                      x = GAME_WIDTH//2, y = GAME_HEIGHT//2,
+                                      linecolor='black')
+                self._endtext.draw(self.view)
+            elif self._wave.isGameWon() == False:
+                self._endtext = GLabel(text="Lost!!!",
+                                      font_size=ARCADE_LARGE,font_name=ARCADE_FONT,
+                                      x = GAME_WIDTH//2, y = GAME_HEIGHT//2,
+                                      linecolor='black')
+                self._endtext.draw(self.view)
+        
 
 
     # HELPER METHODS FOR THE STATES GO HERE
-    def activeState(self, dt):
+    def activeState(self):
         """[summary]
 
         Args:
             Self ([type]): [description]
             dt ([type]): Time in seconds
         """
-        # initialzize Keys
-        actionKeyList = [self.input.is_key_down('right'),
-                       self.input.is_key_down('left'),
-                       self.input.is_key_down('spacebar')]
-                    
-        self._wave.update(actionKeyList, dt)
-        
-        if self._wave.getWaveState() == WAVE_LOST:
-            self._state = STATE_COMPLETE
-            self._text = GLabel(text="Game Over :(",font_size=ARCADE_LARGE,
-                                font_name=ARCADE_FONT,x = GAME_WIDTH//2,
-                                y = 2*GAME_HEIGHT//3, linecolor='black')
-        elif self._wave.getWaveState() == WAVE_WON:
-            self._state = STATE_COMPLETE
-            self._text = GLabel(text="Victory!!! :)",font_size=ARCADE_LARGE,
-                                font_name=ARCADE_FONT,x = GAME_WIDTH//2,
-                                y = 2*GAME_HEIGHT//3, linecolor='black')
-        elif not self._wave.getShipStatus() and self._wave.getLives()>0:
-            self._state = STATE_PAUSED
-            self._text = GLabel(text="Press B to continue",
-                                font_size=ARCADE_LARGE, font_name=ARCADE_LARGE,
-                                x = GAME_WIDTH//2, y = 2*GAME_HEIGHT//3,
-                                fillcolor= "red", linecolor='black')
+         # Determine the current number of keys pressed
+        curr_keys = self.input.key_count
+
+        # Only change if we have just pressed the keys this animation frame
+        change = curr_keys > 0 and self._last == 0 and self.input.is_key_down('s')
+        if self._state == STATE_NEWWAVE:
+            self._state = STATE_ACTIVE
+
+        if change and self._state == STATE_INACTIVE:
+            # Click happened.  Change the state
+            self._state = STATE_NEWWAVE
+            # State changed; reset factor
+            self._text = None
+        elif change and self._state == STATE_PAUSED:
+            self._wave.setIsPaused(False)
+            self._state = STATE_CONTINUE
+        # Update last_keys
+        self._last= curr_keys

@@ -126,87 +126,9 @@ except:
 
 ### ADD MORE CONSTANTS (PROPERLY COMMENTED) AS NECESSARY ###
 
-# The alternate images to use in the filmstrip
-SHIP_IMAGE    = 'ship-strip.png'
+# The alternate images to use in the ship
+SHIP_IMAGE    = 'ship.png'
 
-# The alternate images to use in the filmstrip
-ALIEN_IMAGES   = ('alien-strip1.png','alien-strip2.png','alien-strip3.png')
-# The number of (base) points each alien is worth.  Multiplied by row
-ALIEN_POINTS = 10
-# The speed up factor for each alien killed.
-SPEED_FACTOR = 1.03
-# The music volume for each alien step.
-STEP_VOLUME = 0.3
+ARCADE_LARGE = 48
 
-# The font choice for labels and messages
 ARCADE_FONT = 'Arcade.ttf'
-# A large message or label
-ARCADE_LARGE  = 60
-# A medium message or label
-ARCADE_MEDIUM = 48
-# A small message or label
-ARCADE_SMALL  = 32
-
-# The background color
-DARK_GREY = introcs.RGB(32, 32, 32)
-# Other useful colors
-WHITE_COLOR = introcs.RGB(255, 255, 255)
-YELLOW_COLOR = introcs.RGB(255, 255, 0)
-
-# The offset of the top labels from the top of the screen
-LABEL_HEIGHT  = 32
-# The offset between the score label and the score value
-SCORE_OFFSET  = 150
-# The position of the lives label
-LIVES_MARGIN  = 185
-# The offset between the lives label and the lives value
-LIVES_OFFSET  = 135
-
-# The width of a message banner
-BANNER_WIDTH  = GAME_WIDTH-100
-# The height of a message banner
-BANNER_HEIGHT = GAME_HEIGHT/4
-
-# Defence Line Start - X axis
-START_DEFENSE_LINE = 0
-# DEFENCE LINE END -X AXIS
-END_DEFENSE_LINE = 800
-# LEFT EDGE OF SCREEN
-GAME_LEFT_EDGE = 0
-# PLAYER STATE
-IN_PROGRESS = 0 
-# TRACK WAVE SUCCESS
-WAVE_WON  = 1 
-# TRACK WAVE LOST
-WAVE_LOST  = 2
-# Alien explosion speed
-EXPLOSION_SPEED = 3
-# Speed change of player ship increase (every update)
-SHIP_ACCELERATION = 0.30
-# Speed change of player ship decrease (every update)
-SHIP_DECELERATION = 0.075
-# Angle rotation of the ship
-ANGLE_MULTIPLIER = 6
-# BoSS Lives
-BOSS_LIVES = 1
-# ALPHA value of the parametric equation that controls the boss's movement
-P_ALPHA = 7
-# BETA value of the parametric equation that controls the boss's movement
-P_BETA = 6
-# BOSS movement in X Axis
-P_X = 250
-# BOSS Movement in y axis
-P_Y = 150
-# HOW Fast boss moves
-BOSS_SPEED_FACTOR = 4
-# BOSS Shoting rate
-BOSS_FIRE_RATE = 2
-# BOSS IMAGE RENDER Height
-BOSS_HEIGHT = 75
-# BOSS image render width
-BOSS_WIDTH = 75
-# Half the number of degrees in a circle
-DEGREES = 180
-# BOSS IMAGE
-BOSS_IMAGE = "boss.png"
-
