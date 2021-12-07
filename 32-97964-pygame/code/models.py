@@ -90,32 +90,29 @@ class Ship(GImage):
 
     # INITIALIZER TO CREATE A NEW SHIP
     def __init__(self):
-        super().__init__(x= GAME_WIDTH/2, y= SHIP_BOTTOM+SHIP_HEIGHT/2,
+        super().__init__(x= GAME_WIDTH/2, y= SHIP_BOTTOM + SHIP_HEIGHT/2,
                          width=SHIP_WIDTH, height=SHIP_HEIGHT,
                          source = SHIP_IMAGE)
 
     # METHODS TO MOVE THE SHIP AND CHECK FOR COLLISIONS
     def collides(self, bolt):
-        """[Return true if the bolt was fired by player]
-
-        Args:
-            bolt ([type]): laser bolt to check
         """
-        if self.contains([bolt.getX()-BOLT_WIDTH/2,
+        Returns: True if the bolt was fired by the player ship.
+        """
+        if self.contains([bolt.getX() - BOLT_WIDTH/2,
         bolt.getY()-BOLT_HEIGHT/2]) and not bolt.isPlayerBolt():
-
             return True
-        elif self.contains([bolt.getX()+BOLT_WIDTH/2,
+
+        elif self.contains([bolt.getX() + BOLT_WIDTH/2,
         bolt.getY()-BOLT_HEIGHT/2]) and not bolt.isPlayerBolt():
-
             return True
+
         elif self.contains([bolt.getX()-BOLT_WIDTH/2,
         bolt.getY()+BOLT_HEIGHT/2]) and not bolt.isPlayerBolt():
-
             return True
+
         elif self.contains([bolt.getX()+BOLT_WIDTH/2,
         bolt.getY()+BOLT_HEIGHT/2]) and not bolt.isPlayerBolt():
-
             return True
         else:
             return False
@@ -125,7 +122,7 @@ class Ship(GImage):
     # ADD MORE METHODS (PROPERLY SPECIFIED) AS NECESSARY
 
 
-class Alien(GSprite):
+class Alien(GImage):
     """
     A class to represent a single alien.
 
@@ -147,40 +144,40 @@ class Alien(GSprite):
     # counter : count the number of times set frame called
 
     # GETTERS AND SETTERS (ONLY ADD IF YOU NEED THEM)
-   
-    def getY(self):
-        """
-            Return y coordinate of the middle of the bolt
-
-        Returns:
-            [type]: 
-        """
-        return self.y
-    
     def getX(self):
         """
-            Return x coordinate of the middle of the bolt
+            Return x coordinate of the alien 
 
         Returns:
             [type]: 
         """
         return self.x
+   
+    def getY(self):
+        """
+            Return y coordinate of the alien
+
+        Returns:
+            [type]: 
+        """
+        return self.y
+
     
     def setY(self,y):
         """
-            [Set y coordinate of the middle of the bolt]
+            [Set y coordinate of the alien object]
 
         Args:
-            y ([type]): Y coordinate of the middle ofbolt in number
+            y ([type]): Y coordinate of the alien object center
         """
         self.y = y
         
     def setX(self,x):
         """
-            [Set x coordinate of the middle of the bolt]
+            [Set x coordinate of the middle of the alien object]
 
         Args:
-            x ([type]): x coordinate of the middle ofbolt in number
+            x ([type]): x coordinate of the alien object center
         """
         self.x = x
     
@@ -191,29 +188,41 @@ class Alien(GSprite):
         return self._score
 
     # INITIALIZER TO CREATE AN ALIEN
-    def __init__(self, x, y, alien, score):
-        super().__init__(x=x, y=y,width=ALIEN_WIDTH,height=ALIEN_HEIGHT,
-                         source=alien,format=(3,2))
+    def __init__(self, x, y, alienSource, score):
+        """
+            [Initialize the alien object]
+
+            X and Y co-ordinates of the alien object center
+            alienSource - source of the image
+            score - score value of the alien
+        """
+        super().__init__(x=x, y=y,
+                        width=ALIEN_WIDTH, height=ALIEN_HEIGHT,
+                        source=alienSource, format=(3,2))
 
         self._score = score
 
     # METHOD TO CHECK FOR COLLISION (IF DESIRED)
     def collides(self,bolt):
-        """[Return true if the bolt was fired by player and hits alien]
+        """
+            [Return true if the bolt was fired by player and hits alien]
 
         Args:
             bolt ([type]): laser bolt to check
         """
-        if self.contains([bolt.getX()-BOLT_WIDTH/2,
+        if self.contains([bolt.getX() - BOLT_WIDTH/2,
         bolt.getY()-BOLT_HEIGHT/2]) and bolt.isPlayerBolt():
             return True
-        elif self.contains([bolt.getX()+BOLT_WIDTH/2,
+
+        elif self.contains([bolt.getX() + BOLT_WIDTH/2,
         bolt.getY()-BOLT_HEIGHT/2]) and bolt.isPlayerBolt():
             return True
-        elif self.contains([bolt.getX()-BOLT_WIDTH/2,
+
+        elif self.contains([bolt.getX() - BOLT_WIDTH/2,
         bolt.getY()+BOLT_HEIGHT/2]) and bolt.isPlayerBolt():
             return True
-        elif self.contains([bolt.getX()+BOLT_WIDTH/2,
+
+        elif self.contains([bolt.getX() + BOLT_WIDTH/2,
         bolt.getY()+BOLT_HEIGHT/2]) and bolt.isPlayerBolt():
             return True
         else:
@@ -246,7 +255,7 @@ class Bolt(GRectangle):
     """
     # INSTANCE ATTRIBUTES:
     # Attribute _velocity: the velocity in y direction
-    # Invariant: _velocity is an int or float
+    #
 
     # LIST MORE ATTRIBUTES (AND THEIR INVARIANTS) HERE IF NECESSARY
     def getVelocity(self):
@@ -261,20 +270,11 @@ class Bolt(GRectangle):
         """
         return self.x
 
-    def setX(self,value):
+    def setX(self,x):
         """
         Sets the x coordinate of bolt object's center
-        Parameter: x is the horizontal coordinate of Bolt object center
-        Precondition: x is a float or int in between BOLT_WIDTH/2 and
-        GAME_WIDTH-BOLT_WIDTH/2
         """
-        var = GAME_WIDTH-BOLT_WIDTH/2
-        assert type(value)== int or type(value)== float,repr(value)+' is not a'+\
-        ' valid type'
-        assert value >= GAME_WIDTH/2 and value <= var,repr(value)+\
-        ' is not a valid width for a bolt object'
-
-        self.x= value
+        self.x= x
 
     def getY(self):
         """
@@ -282,58 +282,19 @@ class Bolt(GRectangle):
         """
         return self.y
 
-    def setY(self,value):
+    def setY(self, y):
         """
         Sets the y coordinate of bolt object's center
-        Parameter: y is the vertical coordinate of Bolt object center
-        Precondition: y is a float or int in between -2*BOLT_HEIGHT and
-        GAME_HEIGHT+2*BOLT_HEIGHT
-        The reason why the y value isn't in between BOLT_HEIGHT/2 and GAME_HEIGHT-
-        BOLT_HEIGHT/2 is because of a small discrepancy in deleting the bolts.
-        When had the preconditions as BOLT_HEIGHT/2 and GAME_HEIGHT-BOLT_HEIGHT/2,
-        the program crashed because the frames were updating too quickly so a TA
-        said we could tweak the preconditions to account for this
         """
-        var = GAME_HEIGHT+2*BOLT_HEIGHT
-        assert type(value)== int or type(value)== float,repr(value)+' is not a'+\
-        ' valid type'
-        assert value >= -2*BOLT_HEIGHT and value <= var,repr(value)+\
-        ' is not a valid height for a bolt object'
-
-        self.y= value
+        self.y= y
 
     # INITIALIZER TO SET THE VELOCITY
-    def __init__(self,x,y,width,height,velocity):
+    def __init__(self,x, y, width, height, velocity):
         """
         Initializes a bolt objects with a center coordinate, width, height and
         velocity.
-        Parameter: x is the horizontal coordinate of Bolt object center
-        and is the same x value as the ship
-        Precondition: x is a float or int in between BOLT_WIDTH/2 and
-        GAME_WIDTH-BOLD_WIDTH/2
-        Parameter: y is the vertical coordinate of Bolt object center
-        Precondition: y is a float or int in between -2*BOLT_HEIGHT and
-        GAME_HEIGHT+2*BOLT_HEIGHT
-        Parameter: width is width of the Bolt object
-        Precondition: width is equal to BOLT_WIDTH
-        Parameter: height is heighst of the Bolt object
-        Precondition: height is equal to BOLT_HEIGHT
-        Parameter: _velocity: the velocity in y direction
-        Precondition: _velocity is an int or float
         """
-        assert type(x)== int or type(x)== float,repr(x)+' is not a valid type'
-        assert x >= BOLT_WIDTH/2 and x <= GAME_WIDTH-BOLT_WIDTH/2,repr(x)+\
-        ' is not a valid width for a bolt object'
-        assert type(y)== int or type(y)== float,repr(y)+' is not a valid type'
-        assert y >= -2*BOLT_HEIGHT and y <= GAME_HEIGHT+2*BOLT_HEIGHT,repr(y)+\
-        ' is not a valid height for a bolt object'
-        assert width==BOLT_WIDTH and height==BOLT_HEIGHT,repr(width)+' and '+\
-        repr(height)+' are not the constants for width and height'
-        assert type(velocity)==int or type(velocity)==float,repr(velocity)+\
-        ' is not a valid type'
-
-        super().__init__(x=x,y=y,width=width,height=height,linecolor='black',
-        fillcolor='black')
+        super().__init__(x=x, y=y, width=width, height=height, linecolor='black', fillcolor='black')
         self._velocity = velocity
 
     def isPlayerBolt(self):

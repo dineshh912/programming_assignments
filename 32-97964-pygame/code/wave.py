@@ -105,31 +105,29 @@ class Wave(object):
     # GETTERS AND SETTERS (ONLY ADD IF YOU NEED THEM)
     def isGameWon(self):
         """
-        Returns whether or not the game has been won. This method assumes that
-        the game has been completed and self._state in app.py is STATE_COMPLETE
+        Returns whether or not the game has been won. 
+        ie to change state of the came become STATE_COMPLETE
         """
         return self._gameWon
 
-    def isGameDone(self):
+    def isGameFinished(self):
         """
-        Returns whether or not the game is done and if the game should switch to
-        STATE_COMPLETE
+        Returns whether or not the game is finished 
+        ie to change state of the came become STATE_COMPLETE
         """
         return self._gameDone
 
-    def getIsPaused(self):
+    def isGamePaused(self):
         """
         Returns whether or not the game is paused
         """
         return self._isPaused
 
-    def setIsPaused(self,value):
+    def SETisGamePaused(self,value):
         """
         Sets self._isPaused to follow whether or not the game is paused
-        Parameter: value is whether or not the game is paused
-        Precondition: value is a boolean
+        Parameter: value is whether or not the game is pause
         """
-        assert type(value) == bool,repr(value)+' is not a valid type'
         self._isPaused = value
 
     def getLives(self):
@@ -148,10 +146,9 @@ class Wave(object):
     def __init__(self):
         """
             Initializes the wave with default values
-        
         """
         self._ship = Ship()
-        self._aliens = self._createAliens(ALIENS_IN_ROW,ALIEN_ROWS)
+        self._aliens = self._createAliens(ALIENS_IN_ROW, ALIEN_ROWS)
         self._dline = GPath(points=[0,DEFENSE_LINE,GAME_WIDTH,DEFENSE_LINE],linewidth=2,linecolor='black')
         self._time=0
         self._direction = 'right'
@@ -160,7 +157,7 @@ class Wave(object):
         self._alienRate = random.randint(1,BOLT_RATE)
         self._shooter = None
         self._stepaccum = 0
-        self._lives = 3
+        self._lives = PLAYER_LIVES
         self._isPaused = False
         self._gameDone = False
         self._gameWon = None
@@ -168,7 +165,7 @@ class Wave(object):
 
         
     # UPDATE METHOD TO MOVE THE SHIP, ALIENS, AND LASER BOLTS
-    def update(self, keyList, dt):
+    def update(self, input, dt):
         """
         Animates a single frame of the wave.
         
@@ -180,9 +177,8 @@ class Wave(object):
         to __collisionHanlder). Also animates the explosion sequences and the
         boss.
         
-        Parameter keyList: an array holding whether the left key, right key, and
-                           space bar is pressed.
-        Precondition: keyList is a boolean list of length 3
+        Parameter input : user input
+        Precondition: instance of GInput
         
         Parameter dt: The time in seconds since last update
         Precondition: dt is a number (int or float)
@@ -228,16 +224,14 @@ class Wave(object):
         """
         Checks whether or not the game is over and whether or not the player won
         the game or lost it and returns booleans as required.
-        The ways the player can lose the game is if the aliens reach the defense
-        line or if the player runs out of lives. The player wins the game if they
-        destroy all of the aliens on the screen.
         """
         aliencount = 0
         for row in range(ALIEN_ROWS):
             for alien in range(ALIENS_IN_ROW):
                 if self._aliens[row][alien] is None:
                     aliencount+= 1
-                if self._aliens[row][alien] is not None and self._aliens[row][alien].getY()-ALIEN_HEIGHT/2 <= DEFENSE_LINE:
+                if self._aliens[row][alien] is not None and \
+                    self._aliens[row][alien].getY() - ALIEN_HEIGHT/2 <= DEFENSE_LINE:
                     self._gameDone = True
                     self._gameWon = False
         if self._lives == 0:
@@ -249,18 +243,14 @@ class Wave(object):
                 
     def createShip(self):
         """
-        Creates a ship object with the necessary constants
+            Creates a ship object
         """
-        self._ship = Ship(GAME_WIDTH/2,SHIP_BOTTOM+SHIP_HEIGHT/2,
-        SHIP_WIDTH,SHIP_HEIGHT,SHIP_IMAGE)
+        self._ship = Ship()
 
     def _collision(self):
         """
         Checks whether or not an alien collides with a ship bolt and whether or
-        not a ship collides with an alien bolt. If it does collide, the ship/alien
-        as well as the bolt is deleted from the list(with the case of the alien,
-        it becomes a None value). If the ship is hit by an alien bolt, the player
-        loses a life.
+        not a ship collides with an alien bolt.
         """
         for row in range(ALIEN_ROWS):
             for alien in range(ALIENS_IN_ROW):
@@ -283,46 +273,38 @@ class Wave(object):
 
     def _changeBolt(self):
         """
-        A method to update and move the alien and ship bolts in their corresponding
-        directions.
+            Update and move the alien and ship bolts in their directions.
         """
         for bolt in self._bolts:
-            if bolt.isPlayerBolt()==True:
-                bolt.setY(bolt.getY()+BOLT_SPEED)
+            if bolt.isPlayerBolt() == True:
+                bolt.setY(bolt.getY() + BOLT_SPEED)
             else:
-                bolt.setY(bolt.getY()-BOLT_SPEED)
+                bolt.setY(bolt.getY() - BOLT_SPEED)
 
     def _changeShip(self,input):
         """
-        A method to move the ship left or right. If the ship is at the sides of
-        the screen, the ship is not allowed to move further left or right. If a
-        ship doesn't exist, the method doesn't not update anything.
-        Parameter input: Allows functionality with user input to move ship
-        Precondition: input is an instance of GInput (inherited from GameApp)
+        A method to move the ship left or right.
         """
-        da = 0
+        mov = 0
         if input.is_key_down('left'):
             if self._ship is not None and min(self._ship.getX(),
             SHIP_WIDTH/2)==self._ship.getX():
-                da=0
+                mov=0
             else:
-                da -= SHIP_MOVEMENT
+                mov -= SHIP_MOVEMENT
         if input.is_key_down('right'):
             if self._ship is not None and max(self._ship.getX(),
             GAME_WIDTH-SHIP_WIDTH/2)==self._ship.getX():
-
-                da=0
+                mov=0
             else:
-                da += SHIP_MOVEMENT
+                mov += SHIP_MOVEMENT
         if self._ship is not None:
-            self._ship.setX(self._ship.getX()+da)
+            self._ship.setX(self._ship.getX() + mov)
 
     def _changeAlien(self, dt):
         """
-        A method to move the alien wave either to the right or the left by the
-        amount ALIEN_H_WALK.
-        Parameter dt: The time in seconds since last update
-        Precondition: dt is a number (int or float)
+        A method to move the alien wave either to the right or the left
+
         """
         self._time += dt
         if self._time >= ALIEN_SPEED:
@@ -339,8 +321,7 @@ class Wave(object):
     def _verticalMove(self):
         """
         A method to move the alien wave down ALIEN_V_WALK when it reaches the edge
-        of the screen. It checks whether or not the furthest alien on the left
-        or right is too close to move the aliens
+        of the screen.
         """
         leftAlien = self._verticalMoveHelperLeft()
         rightAlien = self._verticalMoveHelperRight()
@@ -413,13 +394,11 @@ class Wave(object):
         """
         When given user input, a ship bolt is created and added onto the list
         self._bolts and when a ship exists.
-        Parameter input: Allows functionality with user input to create a bolt
-        Precondition: input is an instance of GInput (inherited from GameApp)
         """
         if self._ship is not None:
             xbolt = self._ship.getX()
             ybolt = self._ship.getY()+SHIP_HEIGHT/2+BOLT_HEIGHT/2
-            if input.is_key_down('up') and self._newBolt == True:
+            if input.is_key_down('spacebar') and self._newBolt == True:
                 self._bolts.append(Bolt(xbolt,ybolt,BOLT_WIDTH,
                 BOLT_HEIGHT,BOLT_SPEED))
 
@@ -428,8 +407,7 @@ class Wave(object):
     def _chooseAlien(self):
         """
         This method determines a random column of aliens to fire a bolt as well
-        as the lowest alien in that random column to fire. It makes sure that
-        a None value Alien doesn't fire and crash the program.
+        as the lowest alien in that random column to fire.
         """
         flag = False
         while flag == False:
@@ -447,10 +425,7 @@ class Wave(object):
     def _alienBolt(self):
         """
         This method fires a bolt from the alien that was choosen from the method
-        _chooseAlien. It creates a bolt with negative velocity to differentiate
-        it from a ship bolt and then appends the newly created bolt to self._bolts.
-        It also resets self._stepaccum to make sure there is a delay between
-        the next alien firing.
+        _chooseAlien.
         """
         if self._stepaccum == self._alienRate:
             boltYCoor = self._shooter.getY()-ALIEN_HEIGHT//2
@@ -461,9 +436,7 @@ class Wave(object):
 
     def _oneBolt(self):
         """
-        A method to check if there is only one player bolt on the screen. If there
-        is one bolt, then the player cannot fire again until the bolt goes off
-        the screen.
+        A method to check if there is only one player bolt on the screen.
         """
         for bolt in self._bolts:
             if bolt.isPlayerBolt()==True:
@@ -471,8 +444,7 @@ class Wave(object):
 
     def _removeBolt(self):
         """
-        Removes bolts from the screen once they are out of bounds. For player bolts,
-        it then allows the player to fire another bolt.
+        Removes bolts from the screen once they are out of bounds.
         """
         boltPos = []
         for bolt in range(len(self._bolts)):
@@ -489,15 +461,7 @@ class Wave(object):
         """
         This method initializes a wave of aliens and then appends them to
         self._aliens in the wave object.
-        Parameter: row is the amount of aliens in a rows
-        Precondition: row is an integer equal to ALIENS_IN_ROW
-        Parameter; col is the amount of alien rows
-        Precondition: col is an integer equal to ALIEN_ROWS
         """
-        assert type(row) == int and row == ALIENS_IN_ROW,repr(row)+ 'is not a '+\
-        'valid type and does not equal the correct constant'
-        assert type(col) == int and col == ALIEN_ROWS,repr(col)+' is not a valid type '+\
-        ' and does not equal the correct constant'
         accum = []
         noSpace=ALIEN_ROWS-0.5
 
@@ -523,10 +487,7 @@ class Wave(object):
 
     def _setAlienScore(self,row):
         """
-        Returns a score value for the aliens in the given row. For every higher
-        alien, the score value should increase by 20 points.
-        Parameter: row is the row to which assign a score to
-        Precondition: row is an int >= 0 and <= to ALIEN_ROWS
+        Returns a score value for the aliens in the given row.
         """
         assert type(row) == int and row >= 0 and row <= ALIEN_ROWS,repr(row)+\
         ' is not a valid type or valid row'

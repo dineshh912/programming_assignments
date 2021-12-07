@@ -132,3 +132,5 @@ SHIP_IMAGE    = 'ship.png'
 ARCADE_LARGE = 48
 
 ARCADE_FONT = 'Arcade.ttf'
+
+PLAYER_LIVES = 3
