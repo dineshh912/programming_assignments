@@ -13,7 +13,7 @@
     <header>
         <!-- Brand logo -->
         <div class="brand-logo">
-            <a href="#"><img src="https://www.markuptag.com/images/white-logo-icon.png" alt="Brand Logo"></a>
+            <a href="#"><img src="assets/images/logo.png" alt="Brand Logo"></a>
         </div>
         <!-- Toggle menu button for responsive pages -->
         <input type="checkbox" id="toggle-btn">
@@ -30,12 +30,61 @@
                 <li><label for="toggle-btn" class="hide-menu-btn">Close</label></li>
             </ul>
         </nav>
+
         <!-- Navigation end-->
     </header>
     <!-- Header end -->
-    <main>
-        contact form goes here
-    </main>
+    <!-- content for contact  -->
+        
+    <div class="container about-section">
+        <!-- Title -->
+        <div class="text">Contact us</div>
+        <!-- Form -->
+        <form action="#">
+            <div class="form-row">
+            <div class="input-data">
+                <input type="text" required id="first-name">
+                <div class="underline"></div>
+                <label for="first-name">First Name</label>
+            </div>
+            <div class="input-data">
+                <input type="text" required id="last-name">
+                <div class="underline"></div>
+                <label for="last-name">Last Name</label>
+            </div>
+            </div>
+            <div class="form-row">
+            <div class="input-data">
+                <input type="text" required id="email">
+                <div class="underline"></div>
+                <label for="email">Email Address</label>
+            </div>
+            <div class="input-data">
+                <input type="text" required id="phone">
+                <div class="underline"></div>
+                <label for="phone">Phone</label>
+            </div>
+            </div>
+            <div class="form-row">
+            <div class="input-data textarea">
+                <textarea rows="8" cols="80" required id="message"></textarea>
+                <div class="underline"></div>
+                <label for="message">your message</label>
+            </div>
+            </div>
+            <div class="form-row submit-btn">
+            <div class="input-data">
+                <div class="inner"></div>
+                <input type="submit" value="submit">
+            </div>
+            </div>
+        </form>
+        </div>
+ 
+    <!-- Footer -->
+    <footer>
+        <p>Footer content here!</p>
+    </footer>
 </body>
 
 </html>
