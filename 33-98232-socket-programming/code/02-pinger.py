@@ -125,20 +125,19 @@ def ping(host,timeout=1):
         
         # calculate vars values and return them
         # multiplying wih 1000 because it needs to be in ms
-        packet_min = min(res) 
-        packet_avg = statistics.mean(res)
-        packet_max = max(res)
-        stddev_var = statistics.stdev(res)
-
+        packet_min = min(res) * 1000
+        packet_avg = statistics.mean(res) * 1000
+        packet_max = max(res) * 1000
+        stddev_var = statistics.stdev(res) * 1000
         vars = [str(round(packet_min, 2)), str(round(packet_avg, 2)),str(round(packet_max, 2)),str(round(stddev_var, 2))]
-        print(vars)
         return vars
     except Exception as e:
         vars = ['0','0.0', '0', '0.0']
-        # print(vars)
         return vars
 
 if __name__ == '__main__':
     # ping("No.no.e")
     # ping("127.0.0.1")
     ping("google.co.il")
+    # print(ping("google.co.il")) # valid host
+    # print(ping("no.no.e")) # invalid host
