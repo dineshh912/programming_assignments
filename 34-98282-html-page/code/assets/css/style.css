@@ -152,6 +152,45 @@ figcaption{
 text-align:center;
 padding:10px;
 }
+/* Shows page */
+.shows-section{
+    padding:10%
+}
+.shows-section h2{
+    text-align: center;
+    padding-bottom: 2%;
+}
+.shows-container {
+    border: 3px solid #fff;
+    padding: 20px;
+}
+.shows-child {
+    width: 50%;
+    float: left;
+    padding: 20px;
+}
+
+video {
+    width: 100%;
+    height: auto;
+  }
+
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+
 
 /* Contact form */
 .container{
@@ -304,6 +343,10 @@ padding:10px;
         margin-bottom: 10px;
     }
     .feature-child{
+        width: 100%;
+        text-align:center;
+    }
+    .shows-child{
         width: 100%;
         text-align:center;
     }
