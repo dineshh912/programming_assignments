@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Country Regions</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: arial;
+        }
+        
+        header {
+            height: 100%;
+            width: 100%;
+            float: left;
+            background: #414942;
+            color: #fff;
+        }
+        
+        .navigation {
+            margin: 0px;
+            float: right;
+        }
+        
+        .navigation li {
+            list-style: none;
+            float: left;
+        }
+        
+        .navigation li span {
+            color: #fff;
+            padding: 28px 15px;
+            text-transform: uppercase;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .show-menu-btn,
+        .hide-menu-btn {
+            transition: 0.4s;
+            font-size: 30px;
+            cursor: pointer;
+            display: none;
+        }
+        
+        .show-menu-btn {
+            margin: 10px 10px;
+            float: right;
+        }
+        
+        .show-menu-btn i {
+            line-height: 100px;
+        }
+        
+        .navigation a:hover,
+        .show-menu-btn:hover,
+        .hide-menu-btn:hover {
+            color: #93deae;
+        }
+        
+        #toggle-btn {
+            position: absolute;
+            visibility: hidden;
+            z-index: -1111;
+        }
+        
+        footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #414942;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        
+        th {
+            cursor: pointer;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+        
+        .table-colummn {
+            float: left;
+            width: 100%;
+            padding: 0 5% 0 5%;
+        }
+        
+        .region-info-table {
+            display: none;
+        }
+        
+        .summary-column {
+            padding: 10% 0 5% 0;
+            text-align: center;
+        }
+        
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        /*-- Responsive CSS --*/
+        
+        @media screen and (max-width:767px) {
+            .show-menu-btn,
+            .hide-menu-btn {
+                display: block;
+            }
+            .navigation {
+                position: fixed;
+                width: 100%;
+                height: 100vh;
+                background: #414942;
+                top: -100%;
+                left: 0;
+                padding: 50px 0px;
+                transition: 1s;
+            }
+            .navigation li {
+                width: 100%;
+            }
+            .navigation li a {
+                padding: 15px 15px;
+                text-align: left;
+            }
+            .hide-menu-btn {
+                position: absolute;
+                top: 15px;
+                right: 20px;
+            }
+            #toggle-btn:checked~nav .navigation {
+                top: 0px;
+            }
+            .welcome-section {
+                padding: 20%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <!-- Toggle menu button for responsive pages -->
+        <input type="checkbox" id="toggle-btn">
+        <label for="toggle-btn" class="show-menu-btn">Menu</label>
+        <!-- Navigation menu -->
+        <nav>
+            <ul class="navigation"></ul>
+        </nav>
+        <!-- Navigation end-->
+    </header>
+    <!-- Header end -->
+
+    <section class="region-info-table">
+        <div class="summary-column">
+            <label>Totla Countries: <span id="countries">-</span></label><br/>
+            <label>Totla Population: <span id="total">-</span></label><br/>
+            <lable>Average Population: <span id="population">-</span></lable>
+        </div>
+        <div class="table-colummn">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Capital</th>
+                        <th>Currency</th>
+                        <th>Language</th>
+                        <th>Population</th>
+                    </tr>
+                </thead>
+                <tbody class="table-body">
+
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+    <!-- Footer -->
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Task 1 ----------------------------------------------------------------
+        $(document).ready(function() {
+            /* Below request will retrive the country list from the link and create a menu*/
+            var getRegionsSetting = {
+                "url": "https://www.cs.kent.ac.uk/people/staff/yh/co539-A2/countryData.php?regions",
+                "method": "GET"
+            };
+
+            $.ajax(getRegionsSetting).done(function(response) {
+
+                // Intially clearing previous valus
+                $('.navigation').html('');
+
+                // Add menu value into the header
+                $.each(response, function(k, v) {
+                    $('.navigation').append(`<li id="${v}"><span class="region" id="${v}">${v}</span></li>`);
+                });
+
+                $('.navigation').append(`<li><label for="toggle-btn" class="hide-menu-btn">Close</label></li>`);
+            });
+
+        });
+
+        // Task 2 --------------------------------------------------------
+        $('body').on('click', 'span', function(e) {
+            // Preventing unwanted clicks
+            e.preventDefault();
+            // Get Id of the region
+            var regionID = $(this).attr('id');
+
+            // Construct URL
+            var getDetailsSetting = {
+                "url": "https://www.cs.kent.ac.uk/people/staff/yh/co539-A2/countryData.php?region=" + regionID,
+                "method": "GET"
+            };
+
+            // Send ajax request
+            $.ajax(getDetailsSetting).done(function(response) {
+                // Display container to show values
+                $('.region-info-table').css('display', 'block');
+                $('.table-body').html('');
+
+                // length of the array is total coutries
+                $('#countries').html(response.length);
+
+                // Calculate average population
+                var population = 0;
+                $.each(response, function(k, v) {
+                    population += v['info']['population']
+                });
+
+                // Update total population
+                $('#total').html(population);
+
+                // Calculating and updating average population
+                var averagePopulation = population / response.length
+                $('#population').html(parseInt(averagePopulation));
+                // Updateing table
+                $.each(response, function(k, v) {
+                    $('.table-body').append(`<tr>
+                        <td>${v['name']}</td>
+                        <td>${v['code']}</td> 
+                        <td>${v['capital']}</td> 
+                        <td>${v['info']['currency']}</td> 
+                        <td>${v['info']['language']}</td> 
+                        <td>${v['info']['population']}</td>  
+                        </tr>`);
+                });
+
+            });
+
+        })
+
+        // Task 3 ------------------------------------------------------------------------------
+        // Sort table
+        $('th').click(function() {
+            var table = $(this).parents('table').eq(0)
+            var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+            this.asc = !this.asc
+            if (!this.asc) {
+                rows = rows.reverse()
+            }
+            for (var i = 0; i < rows.length; i++) {
+                table.append(rows[i])
+            }
+        })
+
+        function comparer(index) {
+            return function(a, b) {
+                var valA = getCellValue(a, index),
+                    valB = getCellValue(b, index)
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+            }
+        }
+
+        function getCellValue(row, index) {
+            return $(row).children('td').eq(index).text()
+        }
+    </script>
+</body>
+
+</html>
