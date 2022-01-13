@@ -15,11 +15,11 @@ mongo = PyMongo(app)
 @app.route("/")
 def index():
     mars_hemisphere_image = mongo.db.data.find_one()
-    return render_template("index.html", mars_img = mars_hemisphere_image)
+    return render_template("index.html", mars = mars_hemisphere_image)
 
 
 # Adding scrap data
-@app.route("/scrape_data")
+@app.route("/scrape")
 def scrape_data():
     # this fucntion recall scrapping.py script and scrap the data
     mars_db = mongo.db.data
