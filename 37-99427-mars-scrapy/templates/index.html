@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars image</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron text-center">
+            <h1>Mars Hemisphere App</h1>
+            <p><a class="btn btn-primary btn-md" href="/scrape_data" role="button">Scrape Data</a></p>
+        </div>
+        <!-- Hemisphere images -->
+        <div class="col-12">
+            <h2 class="text-center">Mars Hemispheres</h2>
+            <div class="row" id="hemisphere-images">
+                {% for hemisphere in mars_img.hemisphere_images %}
+                <div class="col-xs-6 col-sm-3">
+                    <div class="thumbnail">
+                        <img src="{{ hemisphere.img_url }}" class="img-thumbnail" />
+                        <div class="caption">
+                            <p>{{ hemisphere.title }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
