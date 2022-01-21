@@ -17,7 +17,7 @@
             <!-- Add a button to activate scraping script -->
             <p><a class="btn btn-primary btn-lg" href="/scrape" role="button">Scrape New Data</a></p>
         </div>
-
+        {% if mars != None %}
         <!-- Add section for Mars News -->
         <div class="row" id="mars-news">
             <div class="col-md-12">
@@ -66,6 +66,7 @@
             </div>
             {% endfor %}
         </div>
+        {% endif %}
     </div>
 </body>
 
