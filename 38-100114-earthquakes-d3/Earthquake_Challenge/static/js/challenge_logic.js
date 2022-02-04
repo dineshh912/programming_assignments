@@ -38,14 +38,14 @@ let baseMaps = {
 // 1. Add a 2nd layer group for the tectonic plate data.
 let allEarthquakes = new L.LayerGroup();
 let tectonicPlates = new L.LayerGroup();
-let majorEQ = new L.LayerGroup();
+let majorEarthquakes = new L.LayerGroup();
 
 
 // 2. Add a reference to the tectonic plates group to the overlays object.
 let overlays = {
     "Tectonic Plates": tectonicPlates,
     "Earthquakes": allEarthquakes,
-    "Major Earthquakes": majorEQ
+    "Major Earthquakes": majorEarthquakes
 
 };
 
@@ -104,7 +104,7 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
     L.geoJson(data, {
         // We turn each feature into a circleMarker on the map.
         pointToLayer: function(feature, latlng) {
-            console.log(data);
+            //console.log(data);
             return L.circleMarker(latlng);
         },
         // We set the style for each circleMarker using our styleInfo function.
@@ -124,34 +124,37 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
 
 
         // 4. Use the same style as the earthquake data.
-        function styleInfo2(feature) {
+        function styleInfoMEQ(feature) {
             return {
                 opacity: 1,
                 fillOpacity: 1,
-                fillColor: getColor2(feature.properties.mag),
+                fillColor: getColorMEQ(feature.properties.mag),
                 color: "#000000",
-                radius: getRadius2(feature.properties.mag),
+                radius: getRadiusMEQ(feature.properties.mag),
                 stroke: true,
                 weight: 0.5
             };
         }
         // 5. Change the color function to use three colors for the major earthquakes based on the magnitude of the earthquake.
-        function getColor2(magnitude) {
+        function getColorMEQ(magnitude) {
             if (magnitude > 5) {
-                return "#ea2c2c";
+                return "red";
+            } else if (magnitude > 4) {
+                return "orange";
+            } else {
+                return "green";
             }
-            if (magnitude > 4) {
-                return "#ea822c";
-            }
-            return "#98ee00";
+
         }
 
         // 6. Use the function that determines the radius of the earthquake marker based on its magnitude.
-        function getRadius2(magnitude) {
+        function getRadiusMEQ(magnitude) {
             if (magnitude === 0) {
                 return 1;
+            } else {
+                return magnitude * 4;
             }
-            return magnitude * 4;
+
         }
 
         // 7. Creating a GeoJSON layer with the retrieved data that adds a circle to the map 
@@ -159,20 +162,20 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
         //  after the marker has been created and styled.
         L.geoJson(data, {
             pointToLayer: function(feature, latlng) {
-                console.log(data);
+                //console.log(data);
                 return L.circleMarker(latlng);
             },
-            style: styleInfo2,
+            style: styleInfoMEQ,
             onEachFeature: function(feature, layer) {
                 layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
             }
 
             // 8. Add the major earthquakes layer to the map.
-        }).addTo(majorEQ);
+        }).addTo(majorEarthquakes);
 
         // 9. Close the braces and parentheses for the major earthquake data.
 
-        majorEQ.addTo(map);
+        majorEarthquakes.addTo(map);
     });
 
     // Here we create a legend control object.
@@ -196,7 +199,7 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
 
         // Looping through our intervals to generate a label with a colored square for each interval.
         for (var i = 0; i < magnitudes.length; i++) {
-            console.log(colors[i]);
+            //console.log(colors[i]);
             div.innerHTML +=
                 "<i style='background: " + colors[i] + "'></i> " +
                 magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>" : "+");
@@ -209,10 +212,9 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
 
 
     // 3. Use d3.json to make a call to get our Tectonic Plate geoJSON data.
-    let tectData = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
 
-    d3.json(tectData).then(function(data) {
-        console.log(data);
+    d3.json("https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json").then(function(data) {
+        //console.log(data);
 
         L.geoJson(data, {
             color: "red",
